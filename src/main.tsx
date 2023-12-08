@@ -8,7 +8,7 @@ import store from "@/stores/store.ts";
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <Provider store={store}>
-        <GoogleOAuthProvider clientId="140786564180-uggpl6p6s3sdhkcq5u07d0uqk4j52sh7.apps.googleusercontent.com">
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
             <BrowserRouter>
                 <App />
             </BrowserRouter>
