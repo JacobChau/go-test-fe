@@ -6,8 +6,6 @@ import { Fade, Button, ClickAwayListener, Paper, Popper, List, ListItemText, Lis
 
 // assets
 import PersonTwoToneIcon from '@mui/icons-material/PersonTwoTone';
-import DraftsTwoToneIcon from '@mui/icons-material/DraftsTwoTone';
-import LockOpenTwoTone from '@mui/icons-material/LockOpenTwoTone';
 import SettingsTwoToneIcon from '@mui/icons-material/SettingsTwoTone';
 import AccountCircleTwoToneIcon from '@mui/icons-material/AccountCircleTwoTone';
 import MeetingRoomTwoToneIcon from '@mui/icons-material/MeetingRoomTwoTone';
@@ -16,7 +14,6 @@ import MeetingRoomTwoToneIcon from '@mui/icons-material/MeetingRoomTwoTone';
 
 const ProfileSection = () => {
     const theme = useTheme();
-    console.log('hello');
 
     const [selectedIndex, setSelectedIndex] = React.useState(1);
     const [open, setOpen] = React.useState(false);
@@ -40,7 +37,7 @@ const ProfileSection = () => {
 
     const prevOpen = React.useRef(open);
     React.useEffect(() => {
-        if (prevOpen.current === true && open === false) {
+        if (prevOpen.current && !open) {
             anchorRef.current.focus();
         }
 
@@ -108,19 +105,7 @@ const ProfileSection = () => {
                                         </ListItemIcon>
                                         <ListItemText primary="Profile" />
                                     </ListItemButton>
-                                    <ListItemButton selected={selectedIndex === 2} onClick={(event) => handleListItemClick(event, 2)}>
-                                        <ListItemIcon>
-                                            <DraftsTwoToneIcon />
-                                        </ListItemIcon>
-                                        <ListItemText primary="My Messages" />
-                                    </ListItemButton>
-                                    <ListItemButton selected={selectedIndex === 3} onClick={(event) => handleListItemClick(event, 3)}>
-                                        <ListItemIcon>
-                                            <LockOpenTwoTone />
-                                        </ListItemIcon>
-                                        <ListItemText primary="Lock Screen" />
-                                    </ListItemButton>
-                                    <ListItemButton selected={selectedIndex === 4}>
+                                    <ListItemButton selected={selectedIndex === 2}>
                                         <ListItemIcon>
                                             <MeetingRoomTwoToneIcon />
                                         </ListItemIcon>

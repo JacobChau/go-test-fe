@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {useDispatch, useSelector} from "react-redux";
 
 // material-ui
@@ -24,18 +24,15 @@ import {Formik, FormikHelpers } from 'formik';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {useTheme} from "@mui/material/styles";
-import { useNavigate } from 'react-router-dom';
 import {login} from "@/stores/authSlice.ts";
 import {RootState} from "@/stores/store.ts";
 
 export const LoginForm: React.FC = () => {
     const theme = useTheme();
     const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const { isLoading, isLoggedIn } = useSelector((state: RootState) => state.auth);
+    const { isLoading } = useSelector((state: RootState) => state.auth);
     const [showPassword, setShowPassword] = React.useState(false);
     const [rememberMe, setRememberMe] = React.useState(false);
-
 
     const handleClickShowPassword = () => {
         setShowPassword(!showPassword);
@@ -64,12 +61,6 @@ export const LoginForm: React.FC = () => {
                 setSubmitting(false);
             });
     };
-
-    useEffect(() => {
-        if (isLoggedIn) {
-            navigate('/', { replace: true });
-        }
-    }, [isLoggedIn, navigate]);
 
     return (
         <Formik

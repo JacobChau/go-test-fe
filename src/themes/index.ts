@@ -14,16 +14,21 @@ export function theme() {
     let textHint;
     let background;
     let paper;
-    let menuCaption;
     let textInversePrimary;
+    let paperWhite;
+    let paperDark;
 
-    textPrimary = textInversePrimary = menuCaption = value.textPrimary;
+    textPrimary = textInversePrimary = value.textPrimary;
     textSecondary = value.textSecondary;
     textDark = value.textDark;
     textHint = value.textHint;
 
     background = value.backgound;
     paper = value.paper;
+
+    paperWhite = value.paperWhite;
+    paperDark = value.paperDark;
+
 
     return createTheme({
         direction: 'ltr',
@@ -68,17 +73,9 @@ export function theme() {
                 300: value.grey300,
                 400: value.grey400
             },
-            bg: {
-                100: value.bg100
-            },
-            textDark: {
-                color: textDark
-            },
             text: {
                 primary: textPrimary,
                 secondary: textSecondary,
-                dark: textDark,
-                hint: textHint
             },
             background: {
                 paper: paper,
@@ -142,34 +139,102 @@ export function theme() {
                 fontWeight: 400,
                 lineHeight: '1.643em'
             },
-            menuCaption: {
-                fontSize: '0.6875rem',
-                fontWeight: 600,
-                color: value.primary,
-                padding: '5px 15px 5px',
-                textTransform: 'uppercase',
-                marginTop: '10px'
-            },
-            subMenuCaption: {
-                fontSize: '0.6875rem',
-                fontWeight: 400,
-                color: menuCaption,
-                textTransform: 'capitalize'
-            },
-            subHeading: {
-                color: 'red'
-            },
-            cardTitle: {
-                color: value.primary,
-                fontSize: '1rem'
-            },
-            breadcrumbTitle: {
-                fontWeight: 500,
-                fontSize: '1.5rem',
-                color: textDark
-            }
         },
         components: {
+            MuiCssBaseline: {
+                styleOverrides: {
+                    '*': {
+                        boxSizing: 'border-box',
+                    },
+                    html: {
+                        height: '100%',
+                        width: '100%',
+                    },
+                    a: {
+                        textDecoration: 'none',
+                    },
+                    body: {
+                        height: '100%',
+                        margin: 0,
+                        padding: 0,
+                    },
+                    '#root': {
+                        height: '100%',
+                    },
+                    "*[dir='rtl'] .buyNowImg": {
+                        transform: 'scaleX(-1)',
+                    },
+                    '.border-none': {
+                        border: '0px',
+                        td: {
+                            border: '0px',
+                        },
+                    },
+                    '.btn-xs': {
+                        minWidth: '30px !important',
+                        width: '30px',
+                        height: '30px',
+                        borderRadius: '6px !important',
+                        padding: '0px !important',
+                    },
+                    '.hover-text-primary:hover .text-hover': {
+                        color: value.primary,
+                    },
+                    '.hoverCard:hover': {
+                        scale: '1.01',
+                        transition: ' 0.1s ease-in',
+                    },
+                    '.signup-bg': {
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        height: '100%',
+                    },
+                    '.MuiBox-root': {
+                        borderRadius: '10px',
+                    },
+                    '.MuiCardHeader-action': {
+                        alignSelf: 'center !important',
+                    },
+                    '.emoji-picker-react .emoji-scroll-wrapper': {
+                        overflowX: 'hidden',
+                    },
+                    '.scrollbar-container': {
+                        borderRight: '0 !important',
+                    },
+                    '.theme-timeline .MuiTimelineOppositeContent-root': {
+                        minWidth: '90px',
+                    },
+                    '.MuiAlert-root .MuiAlert-icon': {
+                        color: 'inherit!important',
+                    },
+                    '.MuiTimelineConnector-root': {
+                        width: '1px !important',
+                    },
+                    ' .simplebar-scrollbar:before': {
+                        background: `${value.primary} !important`,
+                    },
+                    '@keyframes gradient': {
+                        '0%': {
+                            backgroundPosition: '0% 50%',
+                        },
+                        '50%': {
+                            backgroundPosition: ' 100% 50%',
+                        },
+                        '100% ': {
+                            backgroundPosition: ' 0% 50%',
+                        },
+                    },
+                    '@keyframes slide': {
+                        '0%': {
+                            transform: 'translate3d(0, 0, 0)',
+                        },
+                        '100% ': {
+                            transform:  'translate3d(-2086px, 0, 0)',
+                        },
+                    },
+                },
+            },
             MuiList: {
                 styleOverrides: {
                     root: {
@@ -280,7 +345,7 @@ export function theme() {
                     },
                     rounded: {
                         borderRadius: '10px'
-                    }
+                    },
                 }
             },
             MuiCardHeader: {
@@ -323,31 +388,15 @@ export function theme() {
                     }
                 }
             },
-            MUIDataTableSelectCell: {
-                styleOverrides: {
-                    fixedLeft: {
-                        position: 'unset'
-                    }
-                }
-            },
             MuiTableHead: {
                 styleOverrides: {
                     root: {
                         background: background
                     },
-                    MuiChip: {
-                        root: {
-                            backgroundColor: value.secondary
-                        }
-                    }
                 }
             },
             MuiChip: {
                 styleOverrides: {
-                    colorDefault: {
-                        color: grey[100],
-                        backgroundColor: value.secondary
-                    },
                     colorSecondary: {
                         color: grey[100]
                     },
@@ -365,13 +414,6 @@ export function theme() {
                     }
                 }
             },
-            MuiTimelineDot: {
-                styleOverrides: {
-                    filledGrey: {
-                        background: grey[300]
-                    }
-                }
-            },
             MuiCheckbox: {
                 styleOverrides: {
                     root: {
@@ -379,13 +421,6 @@ export function theme() {
                     },
                     indeterminate: {
                         color: value.textPrimary
-                    }
-                }
-            },
-            MuiTimelineConnector: {
-                styleOverrides: {
-                    root: {
-                        background: grey[300]
                     }
                 }
             },
@@ -415,9 +450,9 @@ export function theme() {
             MuiAppBar: {
                 styleOverrides: {
                     colorPrimary: {
-                        backgroundColor: value.paperWhite,
+                        backgroundColor: value.paper,
                         color: value.primaryDark,
-                        boxShadow: 'none'
+                        // boxShadow: 'none'
                     }
                 }
             }
