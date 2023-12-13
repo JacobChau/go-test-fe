@@ -19,7 +19,7 @@ const Loader = () => {
     return (
         <LoaderWrapper>
             <LinearProgress color="secondary" />
-            </LoaderWrapper>
+        </LoaderWrapper>
     );
 };
 

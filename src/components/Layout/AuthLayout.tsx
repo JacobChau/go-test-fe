@@ -1,5 +1,5 @@
 import React, {ReactNode, useEffect} from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import {Link as RouterLink, useNavigate} from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import {Card, CardContent, Typography, Grid, Box, Divider, Alert} from '@mui/material';
 import GoogleSignInButton from "@components/Button/GoogleSignInButton.tsx";
@@ -20,10 +20,21 @@ interface AuthLayoutProps {
 
 const AuthLayout: React.FC<AuthLayoutProps>  = ({ title, subTitle, formComponent, linkText, to }) => {
     const theme = useTheme();
+    const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { isLoggedIn } = useSelector((state: RootState) => state.auth);
+
+
+    useEffect(() => {
+        if (isLoggedIn) {
+            navigate('/', { replace: true });
+        }
+    }, [isLoggedIn, navigate]);
+
 
     const signIn = useGoogleLogin({
         onSuccess: tokenResponse => {
+            console.log('Google login successful:', tokenResponse);
             dispatch<any>(loginWithGoogle({accessToken: tokenResponse.access_token}))
                 .unwrap()
                 .catch((error: any) => {
