@@ -1,7 +1,7 @@
 import client from "@/api/axios/axiosConfig.ts";
 import {
     AccessTokenPayload,
-    ApiResponse,
+    AuthResponse,
     CredentialsParams,
     CredentialsPayload, ForgotPasswordParams, GoogleLoginParams, RefreshTokenParams,
 } from "@/types/apis";
@@ -10,7 +10,7 @@ import {removeTokens, setAccessToken, setRefreshToken} from "@/helpers";
 const API_URL = '/auth';
 
 const login = async (data: CredentialsParams)  => {
-   return client.post<ApiResponse<CredentialsPayload>>(`${API_URL}/login`, data).then((response) => {
+   return client.post<AuthResponse<CredentialsPayload>>(`${API_URL}/login`, data).then((response) => {
        if (response.data) {
            const {accessToken, refreshToken} = response.data.data;
            setAccessToken(accessToken);
@@ -25,7 +25,7 @@ const login = async (data: CredentialsParams)  => {
 }
 
 const register = async (data: CredentialsParams) => {
-    return client.post<ApiResponse<CredentialsPayload>>(`${API_URL}/register`, data);
+    return client.post<AuthResponse<CredentialsPayload>>(`${API_URL}/register`, data);
 }
 
 const logout = () => {
@@ -33,8 +33,7 @@ const logout = () => {
 }
 
 const loginWithGoogle = async (data: GoogleLoginParams) => {
-    return client.post<ApiResponse<AccessTokenPayload>>(`${API_URL}/google`, data).then((response) => {
-        console.log(response);
+    return client.post<AuthResponse<AccessTokenPayload>>(`${API_URL}/google`, data).then((response) => {
         if (response.data) {
             const {accessToken} = response.data.data;
             setAccessToken(accessToken);
@@ -45,7 +44,7 @@ const loginWithGoogle = async (data: GoogleLoginParams) => {
 }
 
 const refreshToken = async (data: RefreshTokenParams) => {
-    return client.post<ApiResponse<AccessTokenPayload>>(`${API_URL}/refresh`, data).then((response) => {
+    return client.post<AuthResponse<AccessTokenPayload>>(`${API_URL}/refresh`, data).then((response) => {
         if (response.data) {
             const {accessToken} = response.data.data;
             setAccessToken(accessToken)

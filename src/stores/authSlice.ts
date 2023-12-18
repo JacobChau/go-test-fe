@@ -8,14 +8,14 @@ import {
 } from "@/types/apis";
 import {AuthState} from "@/stores/types.ts";
 import AuthService from "@/api/services/authService.ts";
-import {setMessage} from "@/stores/messageSlice.ts";
+import {setMessageWithTimeout} from "@/stores/messageSlice.ts";
 
 export const login = createAsyncThunk(
     'auth/login',
     async (data: CredentialsParams, thunkAPI) => {
         try {
             const response = await AuthService.login(data);
-            thunkAPI.dispatch(setMessage({message: response.data.message, isError: false}));
+            thunkAPI.dispatch(setMessageWithTimeout({message: response.data.message, isError: false}));
             return response;
         } catch (e: any) {
             const message =
@@ -25,7 +25,7 @@ export const login = createAsyncThunk(
                 e.message ||
                 e.toString();
 
-            thunkAPI.dispatch(setMessage({message, isError: true}));
+            thunkAPI.dispatch(setMessageWithTimeout({message, isError: true}));
             return thunkAPI.rejectWithValue({error: message});
         }
     }
@@ -36,7 +36,7 @@ export const register = createAsyncThunk(
     async (data: RegisterParams, thunkAPI) => {
         try {
             const response = await AuthService.register(data);
-            thunkAPI.dispatch(setMessage({message: response.data.message, isError: false}));
+            thunkAPI.dispatch(setMessageWithTimeout({message: response.data.message, isError: false}));
             return response.data.data;
         } catch (e: any) {
             const message =
@@ -46,7 +46,7 @@ export const register = createAsyncThunk(
                 e.message ||
                 e.toString();
 
-            thunkAPI.dispatch(setMessage({message, isError: true}));
+            thunkAPI.dispatch(setMessageWithTimeout({message, isError: true}));
             return thunkAPI.rejectWithValue({error: message});
         }
     }
@@ -61,7 +61,7 @@ export const loginWithGoogle = createAsyncThunk(
     async (data: GoogleLoginParams, thunkAPI) => {
         try {
             const response = await AuthService.loginWithGoogle(data);
-            thunkAPI.dispatch(setMessage({message: response.data.message, isError: false}));
+            thunkAPI.dispatch(setMessageWithTimeout({message: response.data.message, isError: false}));
             return response.data.data;
         } catch (e: any) {
             const message =
@@ -71,7 +71,7 @@ export const loginWithGoogle = createAsyncThunk(
                 e.message ||
                 e.toString();
 
-            thunkAPI.dispatch(setMessage({message, isError: true}));
+            thunkAPI.dispatch(setMessageWithTimeout({message, isError: true}));
             return thunkAPI.rejectWithValue({error: message});
         }
     }
@@ -82,7 +82,7 @@ export const refreshToken = createAsyncThunk(
     async (data: RefreshTokenParams, thunkAPI) => {
         try {
             const response = await AuthService.refreshToken(data);
-            thunkAPI.dispatch(setMessage({message: response.data.message, isError: false}));
+            thunkAPI.dispatch(setMessageWithTimeout({message: response.data.message, isError: false}));
             return response.data.data;
         } catch (e: any) {
             const message =
@@ -92,7 +92,7 @@ export const refreshToken = createAsyncThunk(
                 e.message ||
                 e.toString();
 
-            thunkAPI.dispatch(setMessage({message, isError: true}));
+            thunkAPI.dispatch(setMessageWithTimeout({message, isError: true}));
             return thunkAPI.rejectWithValue({error: message});
         }
     }
@@ -103,7 +103,7 @@ export const forgotPassword = createAsyncThunk(
     async (data: ForgotPasswordParams, thunkAPI) => {
         try {
             const response = await AuthService.forgotPassword(data);
-            thunkAPI.dispatch(setMessage({message: response.data.message, isError: false}));
+            thunkAPI.dispatch(setMessageWithTimeout({message: response.data.message, isError: false}));
             return response.data.data;
         } catch (e: any) {
             const message =
@@ -113,7 +113,7 @@ export const forgotPassword = createAsyncThunk(
                 e.message ||
                 e.toString();
 
-            thunkAPI.dispatch(setMessage({message, isError: true}));
+            thunkAPI.dispatch(setMessageWithTimeout({message, isError: true}));
             return thunkAPI.rejectWithValue({error: message});
         }
     }

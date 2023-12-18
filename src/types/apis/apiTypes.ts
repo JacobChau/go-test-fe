@@ -22,6 +22,12 @@ export interface ApiResponse<T> {
     status?: number;
 }
 
+export interface AuthResponse<T> {
+    data: T;
+    message?: string;
+    status?: number;
+}
+
 export interface Meta {
     total: number;
     perPage: number;
