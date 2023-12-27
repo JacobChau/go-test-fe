@@ -1,6 +1,6 @@
 import {QuestionType} from "@/constants/question.ts";
 import {FC, useCallback, useState} from "react";
-import {QuestionData} from "@/pages/question/CreateQuestion/CreateQuestion.tsx";
+import {QuestionData} from "@/pages/question/CreateOrUpdateQuestion.tsx";
 import {FillInTheBlanks, MultipleChoiceOptions, TrueFalseOptions} from "@/pages/question/components/options";
 
 
@@ -21,11 +21,15 @@ const QuestionOptions: FC<QuestionOptionsProps> = ({ questionData, setQuestionDa
     }, []);
 
     const handleSingleAnswerOptionChange: HandleOptionChange = (index, field, value) => {
-        const updatedOptions = questionData.options.map((option, idx) =>
-            idx === index ? { ...option, [field]: value } : { ...option, isCorrect: false }
+        const updatedOptions = questionData.options.map((option, idx) => {
+                if (field === "isCorrect") {
+                    return idx === index ? {...option, [field]: Boolean(value)} : {...option, [field]: false};
+                }
+
+                return idx === index ? {...option, [field]: value} : option;
+            }
         );
 
-        console.log(updatedOptions);
         setQuestionData({ ...questionData, options: updatedOptions });
     };
 

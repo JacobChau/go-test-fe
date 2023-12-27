@@ -6,7 +6,7 @@ import {
     Typography,
     useTheme,
 } from "@mui/material";
-import { Option } from "@/pages/question/CreateQuestion/CreateQuestion.tsx";
+import { Option } from "@/pages/question/CreateOrUpdateQuestion.tsx";
 import { HandleOptionChange } from "@/pages/question/components/QuestionOptions.tsx";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import CustomTextField from "@components/Input/CustomTextField.tsx";

@@ -31,3 +31,13 @@ export function resizeImage(file: File, maxHeight: number, callback: ResizeCallb
     };
     reader.readAsDataURL(file);
 }
+
+export const extractImagesUrl = (content: string) => {
+    let images = [];
+    let imgRegex = /<img.*?src="(.*?)"/g;
+    let match;
+    while ((match = imgRegex.exec(content)) !== null) {
+        images.push(match[1]);
+    }
+    return images;
+};

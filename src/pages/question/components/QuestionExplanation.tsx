@@ -3,20 +3,19 @@ import { Button, Box, Collapse } from "@mui/material";
 import QuillEditor from "@components/Form/QuillEditor/QuillEditor.tsx";
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
-import {ExplanationAttributes} from "@/types/apis";
 import {useTheme} from "@mui/material/styles";
 
 export interface QuestionExplanationProps {
-    explanation: ExplanationAttributes | undefined;
-    setExplanation: (value: ExplanationAttributes) => void;
+    explanation?: string;
+    setExplanation: (value: string) => void;
 }
 
 const QuestionExplanation: FC<QuestionExplanationProps> = ({ explanation, setExplanation }) => {
     const theme = useTheme();
-    const [showExplanation, setShowExplanation] = useState(false);
+    const [showExplanation, setShowExplanation] = useState<boolean>(explanation !== undefined && explanation !== null && explanation !== "");
 
     const toggleExplanation = () => setShowExplanation(!showExplanation);
-    const handleExplanationChange = (value: ExplanationAttributes) => {
+    const handleExplanationChange = (value: string) => {
         setExplanation(value);
     }
 
@@ -34,7 +33,7 @@ const QuestionExplanation: FC<QuestionExplanationProps> = ({ explanation, setExp
             <Collapse in={showExplanation}>
                 <Box sx={{ mt: 2 }}>
                     <QuillEditor
-                        value={explanation}
+                        value={explanation || ""}
                         onChange={handleExplanationChange}
                         placeholder="Type your explanation here..."
                     />

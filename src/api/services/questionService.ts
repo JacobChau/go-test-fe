@@ -3,20 +3,20 @@ import {
     ApiResponse,
     CreateQuestionParams,
     CreateCategoryParams,
-    PaginationParams,
+    QueryParams,
     QuestionAttributes,
-    CategoryAttributes
+    CategoryAttributes, Resource, QuestionDetailPayload, UpdateQuestionParams
 } from "@/types/apis";
 
 const QUESTION_API_URL = '/questions';
 const CATEGORY_API_URL = '/categories';
 
-const getQuestions = async (data: PaginationParams): Promise<ApiResponse<QuestionAttributes>> => {
+const getQuestions = async (data: QueryParams): Promise<ApiResponse<Resource<QuestionAttributes>>> => {
     const response = await client.get(QUESTION_API_URL, {params: data});
     return response.data;
 }
 
-const updateQuestion = async (id: string, data: QuestionAttributes) => {
+const updateQuestion = async (id: string, data: UpdateQuestionParams) => {
     return await client.put(`${QUESTION_API_URL}/${id}`, data);
 }
 
@@ -28,7 +28,12 @@ const createQuestion = async (data: CreateQuestionParams) => {
     return await client.post(QUESTION_API_URL, data);
 }
 
-const getCategories = async (data?: PaginationParams): Promise<ApiResponse<CategoryAttributes>> => {
+const getQuestionById = async (id: string) : Promise<ApiResponse<Resource<QuestionDetailPayload>>> => {
+    const response = await client.get(`${QUESTION_API_URL}/${id}`);
+    return response.data;
+}
+
+const getCategories = async (data?: QueryParams): Promise<ApiResponse<Resource<CategoryAttributes>>> => {
     const response = await client.get(CATEGORY_API_URL, {params: data});
     return response.data;
 }
@@ -50,6 +55,7 @@ const QuestionService = {
     updateQuestion,
     deleteQuestion,
     createQuestion,
+    getQuestionById,
     getCategories,
     updateCategory,
     deleteCategory,

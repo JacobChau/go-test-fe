@@ -3,7 +3,6 @@ import { Verify} from "@/pages/auth";
 import Loadable from "@components/Loadable.tsx";
 import {Public} from "@/routes/AuthMiddleware.tsx";
 import MinimalLayout from "@/layouts/MinimalLayout.tsx";
-import {Navigate} from "react-router-dom";
 
 const AuthLogin = Loadable(lazy(()=> import("@/pages/auth/Login.tsx")));
 const AuthRegister = Loadable(lazy(()=> import("@/pages/auth/Register.tsx")));
@@ -15,10 +14,10 @@ const AuthenticationRoutes = {
     path: "/",
     element: <MinimalLayout />,
     children: [
-        {
-            path: "/404",
-            element: <ErrorNotFound />,
-        },
+        // {
+        //     path: "/404",
+        //     element: <ErrorNotFound />,
+        // },
         {
             path: "/login",
             element: <Public><AuthLogin /></Public>,
@@ -37,7 +36,7 @@ const AuthenticationRoutes = {
         },
         {
             path: "*",
-            element: <Navigate to="/404" />,
+            element: <ErrorNotFound />,
         }
     ],
 };

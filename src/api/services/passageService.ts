@@ -3,14 +3,13 @@ import {
     ApiResponse,
     CreatePassageParams,
     PassageDetailPayload,
-    PassagesPayload,
-    PaginationParams,
-    PassageAttributes
+    QueryParams,
+    PassageAttributes, Resource
 } from "@/types/apis";
 
 const API_URL = '/passages';
 
-const getPassages = async (data?: PaginationParams): Promise<ApiResponse<PassagesPayload>> => {
+const getPassages = async (data?: QueryParams): Promise<ApiResponse<Resource<PassageAttributes>[]>> => {
     const response = await client.get(API_URL, {params: data});
     return response.data;
 }
@@ -27,7 +26,7 @@ const createPassage = async (data: CreatePassageParams) => {
     return await client.post(API_URL, data);
 }
 
-const getPassageDetail = async (id: string): Promise<ApiResponse<PassageDetailPayload>> => {
+const getPassageById = async (id: string): Promise<ApiResponse<Resource<PassageDetailPayload>>> => {
     const response = await client.get(`${API_URL}/${id}`)
     return response.data;
 }
@@ -37,7 +36,7 @@ const PassageService = {
     createPassage,
     updatePassage,
     deletePassage,
-    getPassageDetail
+    getPassageById
 }
 
 export default PassageService;

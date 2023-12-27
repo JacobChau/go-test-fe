@@ -7,7 +7,7 @@ import {
     Grid, Typography, useTheme, Switch,
 } from "@mui/material";
 import QuillEditor from "@components/Form/QuillEditor/QuillEditor.tsx";
-import { Option } from "@/pages/question/CreateQuestion/CreateQuestion.tsx";
+import { Option } from "@/pages/question/CreateOrUpdateQuestion.tsx";
 import {FC} from "react";
 import {HandleOptionChange} from "@/pages/question/components/QuestionOptions.tsx";
 

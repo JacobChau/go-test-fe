@@ -1,4 +1,5 @@
 export enum QuestionType {
+    All = 'All',
     MultipleChoice = 'Multiple Choice',
     MultipleAnswer = 'Multiple Answer',
     TrueFalse = 'True False',

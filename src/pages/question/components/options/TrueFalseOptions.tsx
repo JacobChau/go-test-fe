@@ -1,7 +1,7 @@
 import { FormControlLabel, Grid, Radio, RadioGroup, Typography, useTheme } from "@mui/material";
 import { HandleOptionChange } from "@/pages/question/components/QuestionOptions.tsx";
 import { FC } from "react";
-import { Option } from "@/pages/question/CreateQuestion/CreateQuestion.tsx";
+import { Option } from "@/pages/question/CreateOrUpdateQuestion.tsx";
 
 export interface TrueFalseOptionsProps {
     options: Option[];

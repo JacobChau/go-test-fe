@@ -1,9 +1,9 @@
 import client from "@/api/axios/axiosConfig.ts";
-import {ApiResponse, CreateUserParams, PaginationParams, UserAttributes} from "@/types/apis";
+import {ApiResponse, CreateUserParams, QueryParams, UserAttributes} from "@/types/apis";
 
 const API_URL = '/users';
 
-const getUsers = async (data: PaginationParams): Promise<ApiResponse<UserAttributes>> => {
+const getUsers = async (data: QueryParams): Promise<ApiResponse<UserAttributes>> => {
     const response = await client.get(API_URL, {params: data});
     return response.data;
 }
