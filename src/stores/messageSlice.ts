@@ -1,7 +1,18 @@
-import { createSlice } from "@reduxjs/toolkit";
+import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 import {MessageState} from "@/stores/types.ts";
 
-
+export const setMessageWithTimeout = createAsyncThunk(
+    'message/setMessageWithTimeout',
+    async (payload: MessageState, { dispatch }) => {
+        dispatch(setMessage(payload));
+        return new Promise<void>((resolve) => {
+            setTimeout(() => {
+                dispatch(clearMessage());
+                resolve();
+            }, 1500);
+        });
+    }
+);
 
 const initialState: MessageState = {
 }

@@ -374,11 +374,9 @@ export function theme() {
             MuiTableCell: {
                 styleOverrides: {
                     root: {
-                        padding: '16px 36px 16px 36px',
                         whiteSpace: 'normal'
                     },
                     head: {
-                        padding: '16px 36px 16px 36px',
                         color: textDark,
                         fontWeight: 600
                     },
@@ -391,7 +389,7 @@ export function theme() {
             MuiTableHead: {
                 styleOverrides: {
                     root: {
-                        background: background
+                        background: paperWhite,
                     },
                 }
             },
@@ -444,8 +442,9 @@ export function theme() {
                 styleOverrides: {
                     input: {
                         color: textDark,
-                    }
-                }
+                        padding: '0px 12px'
+                    },
+                },
             },
             MuiAppBar: {
                 styleOverrides: {
@@ -455,7 +454,7 @@ export function theme() {
                         // boxShadow: 'none'
                     }
                 }
-            }
+            },
         }
     });
 }

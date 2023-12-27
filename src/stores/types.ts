@@ -6,6 +6,7 @@ export interface AuthState {
 export interface MessageState {
     message?: string;
     isError?: boolean;
+    timer?: NodeJS.Timeout;
 }
 
 export interface CustomizationState {

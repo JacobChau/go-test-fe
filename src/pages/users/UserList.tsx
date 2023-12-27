@@ -1,11 +1,12 @@
 import GenericTable, {ActionTableProps} from "@components/PaginationTable/GenericTable.tsx";
 import UserActions from "./components/UserActions";
 import {UserColumns} from "@/pages/users/components/UserColumns.tsx";
-import {useCallback, useEffect, useState} from "react";
 import {CreateUserParams, PaginationState, UserAttributes} from "@/types/apis";
 import UserService from "@/api/services/userService.ts";
 import {Alert, Snackbar} from "@mui/material";
 import CreateUserForm from "@/pages/users/components/CreateUserForm.tsx";
+import {useFetchData} from "@/hooks";
+import {SearchColumn} from "@components/Search/SearchComponent.tsx";
 
 const initialPagination: PaginationState  = {
     page: 0,
@@ -13,55 +14,26 @@ const initialPagination: PaginationState  = {
     total: 0
 };
 
+const UserSearchColumn: SearchColumn[] = [
+    { key: 'name', label: 'Name' },
+    { key: 'email', label: 'Email' },
+    { key: 'email_verified_at', label: 'Email Verified At' },
+];
+
 
 const UserListPage = () => {
-    const [users, setUsers] = useState<UserAttributes[]>([]);
-    const [pagination, setPagination] = useState(initialPagination);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    const fetchUsers = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-
-        try {
-            const {data, meta} = await UserService.getUsers({
-                page: pagination.page + 1,
-                perPage: pagination.perPage
-            });
-
-            const users = Array.isArray(data) ? data : [data];
-            setUsers(users.map(user => ({...user.attributes, _id: user.id})));
-            if (!pagination.total && meta && meta.total) {
-                setPagination(prev => ({...prev, total: meta.total}));
-            }
-
-        } catch (error) {
-            console.error('Failed to fetch users:', error);
-            setError('Failed to fetch users');
-        } finally {
-            setLoading(false);
-        }
-    }, [pagination.page, pagination.perPage]);
-
-    useEffect(() => {
-        fetchUsers().catch((error) => {
-            console.error('Failed to fetch users:', error);
-            setError('Failed to fetch users');
-        })
-    }, [fetchUsers]);
+    const {items: users, fetchData: fetchUsers,searchTerm, searchCriteria, handleSearchTermChange, handleSearchChange, loading, setLoading, error, setError, pagination, handlePageChange, handleRowsPerPageChange} = useFetchData<UserAttributes>(
+        UserService.getUsers,
+        initialPagination,
+        UserSearchColumn[0]
+    );
 
     const handleUserUpdated = async (_id: string, updatedUser: UserAttributes) => {
         setLoading(true);
         try {
-            // Perform the update operation
             await UserService.updateUser(_id, updatedUser);
 
-            // If successful, refetch the user list
-            fetchUsers().catch((error) => {
-                console.error('Failed to refetch users after update:', error);
-                setError('Failed to update user and refetch list');
-            });
+            fetchUsers();
         } catch (error) {
             console.error('Failed to update user:', error);
             setError('Failed to update user');
@@ -73,14 +45,9 @@ const UserListPage = () => {
     const handleUserDeleted = async (_id: string) => {
         setLoading(true);
         try {
-            // Perform the update operation
             await UserService.deleteUser(_id);
 
-            // If successful, refetch the user list
-            fetchUsers().catch((error) => {
-                console.error('Failed to refetch users after delete:', error);
-                setError('Failed to delete user and refetch list');
-            });
+            fetchUsers();
         } catch (error) {
             console.error('Failed to delete user:', error);
             setError('Failed to delete user');
@@ -93,21 +60,10 @@ const UserListPage = () => {
         setLoading(true);
         await UserService.createUser(newUser);
 
-        fetchUsers().catch((error) => {
-            console.error('Failed to refetch users after create:', error);
-            setError('Failed to create user and refetch list');
-        });
+        fetchUsers();
     }
 
-
-    const handlePageChange = (newPage: number) =>
-        setPagination(prev => ({...prev, page: newPage}));
-
-
-    const handleRowsPerPageChange = (newRowsPerPage: number) =>
-        setPagination({ ...initialPagination, perPage: newRowsPerPage });
-
-
+    console.log(users);
     return (
         <>
             <Snackbar open={Boolean(error)} autoHideDuration={6000} onClose={() => setError(null)}>
@@ -119,6 +75,7 @@ const UserListPage = () => {
                 title="User List"
                 description="List of users with details"
                 columns={UserColumns}
+                searchColumn={UserSearchColumn}
                 data={users}
                 actions={(props: ActionTableProps) => (
                     <UserActions
@@ -135,6 +92,10 @@ const UserListPage = () => {
                 onRowsPerPageChange={handleRowsPerPageChange}
                 FormComponent={CreateUserForm}
                 loading={loading}
+                searchTerm={searchTerm}
+                onSearchTermChange={handleSearchTermChange}
+                onSearch={handleSearchChange}
+                searchCriteria={searchCriteria}
             />
         </>
     );

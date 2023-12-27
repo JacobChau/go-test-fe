@@ -34,7 +34,6 @@ const AuthLayout: React.FC<AuthLayoutProps>  = ({ title, subTitle, formComponent
 
     const signIn = useGoogleLogin({
         onSuccess: tokenResponse => {
-            console.log('Google login successful:', tokenResponse);
             dispatch<any>(loginWithGoogle({accessToken: tokenResponse.access_token}))
                 .unwrap()
                 .catch((error: any) => {
@@ -44,15 +43,6 @@ const AuthLayout: React.FC<AuthLayoutProps>  = ({ title, subTitle, formComponent
     });
 
     const { message, isError } = useSelector((state: RootState) => state.message);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            dispatch(clearMessage());
-        }, 2000);
-
-        return () => clearTimeout(timer);
-    }, [message, dispatch]);
-
 
 
     return (

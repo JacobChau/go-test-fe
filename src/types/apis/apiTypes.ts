@@ -3,21 +3,35 @@ export interface ResourceIdentifier {
     type: string;
 }
 
+export interface Identity {
+    id: number;
+}
+
+export interface IdentityOptional {
+    id?: number;
+}
+
 export interface Relationship {
     data: ResourceIdentifier | ResourceIdentifier[];
 }
 
 export interface Resource<T> {
-    id: string;
+    id: number;
     type: string;
     attributes: T;
     relationships?: Record<string, Relationship>;
 }
 
 export interface ApiResponse<T> {
-    data: Resource<T> | Resource<T>[];
+    data: T;
     included?: Resource<any>[];
     meta?: Meta;
+    message?: string;
+    status?: number;
+}
+
+export interface AuthResponse<T> {
+    data: T;
     message?: string;
     status?: number;
 }
@@ -29,11 +43,15 @@ export interface Meta {
     lastPage: number;
 }
 
-export interface PaginationParams {
+export interface QueryParams {
     page: number;
     perPage: number;
-    include?: string;
+    searchType?: string;
+    searchKeyword?: string;
+    searchColumn?: string;
+    filters?: object;
 }
+
 
 export interface PaginationState {
     page: number;
