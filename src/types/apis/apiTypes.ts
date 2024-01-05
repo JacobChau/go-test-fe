@@ -24,7 +24,7 @@ export interface Resource<T> {
 
 export interface ApiResponse<T> {
     data: T;
-    included?: Resource<any>[];
+    included?: Resource<never>[];
     meta?: Meta;
     message?: string;
     status?: number;

@@ -1,6 +1,5 @@
 import { Box, Container, Typography, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
-import ErrorImg from '@assets/images/errorimg.svg';
 
 const ErrorNotFound = () => (
     <Box
@@ -11,7 +10,7 @@ const ErrorNotFound = () => (
         justifyContent="center"
     >
         <Container maxWidth="md">
-            <img src={ErrorImg} alt="404" />
+            <img src="" alt="404" />
             <Typography align="center" variant="h1" mb={4}>
                 Opps!!!
             </Typography>

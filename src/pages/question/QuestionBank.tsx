@@ -1,4 +1,4 @@
-import {PaginationState, QuestionAttributes, Resource} from "@/types/apis";
+import {PaginationState, QuestionAttributes} from "@/types/apis";
 import QuestionService from "@/api/services/questionService.ts";
 import {Alert, Snackbar} from "@mui/material";
 import {GenericTable} from "@components/PaginationTable";
@@ -17,7 +17,7 @@ const initialPagination: PaginationState  = {
 const QuestionListPage = () => {
     const navigate = useNavigate();
 
-    const {items: questions, searchTerm, filters, searchCriteria, handleSearchTermChange, handleSearchChange, loading, setLoading, error, setError, pagination, handlePageChange, handleRowsPerPageChange, handleFilterChange} = useFetchData<Resource<QuestionAttributes>>(
+    const {items: questions, searchTerm, filters, searchCriteria, handleSearchTermChange, handleSearchChange, loading, setLoading, error, setError, pagination, handlePageChange, handleRowsPerPageChange, handleFilterChange} = useFetchData<QuestionAttributes>(
         QuestionService.getQuestions,
         initialPagination,
         QuestionSearchColumn[0]

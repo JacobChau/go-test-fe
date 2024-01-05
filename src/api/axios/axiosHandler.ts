@@ -1,38 +1,56 @@
-import {AxiosError, AxiosResponse} from 'axios';
-import {ApiResponse} from "@/types/apis";
+import { AxiosError, AxiosResponse } from "axios";
+import { ApiResponse } from "@/types/apis";
 import AuthService from "@/api/services/authService.ts";
 import client from "@/api/axios/axiosConfig.ts";
-import {getAccessToken, getRefreshToken, removeTokens} from "@/helpers";
-
+import {
+  getAccessToken,
+  getRefreshToken,
+  setAccessToken,
+  setRefreshToken,
+} from "@/helpers";
 
 export const errorHandler = async (error: AxiosError) => {
-    if (error.config && error.response && error.response.status === 401) {
-        const refreshToken = getRefreshToken();
-        if (refreshToken) {
-            try {
-                await AuthService.refreshToken({refreshToken});
-                console.log('refresh token success');
-                const accessToken = getAccessToken();
+  if (error.config && error.response && error.response.status === 401) {
+    const currentRefreshToken = getRefreshToken();
+    if (currentRefreshToken) {
+      try {
+        const { data } = await AuthService.refreshToken({
+          refreshToken: currentRefreshToken,
+        });
+        console.log("refresh token success");
+        const { accessToken, refreshToken } = data.data;
+        setAccessToken(accessToken);
 
-                // Retry failed request
-                error.config.headers['Authorization'] = `Bearer ${accessToken}`;
-                return await client.request(error.config);
-            } catch (e) {
-                return Promise.reject(e);
-            }
+        if (refreshToken) {
+          setRefreshToken(refreshToken);
         }
+
+        // Retry failed request
+        error.config.headers["Authorization"] = `Bearer ${accessToken}`;
+
+        console.log(error.config);
+        return await client.request(error.config);
+      } catch (e) {
+        console.log("refresh token failed");
 
         // clear token and redirect to login page
         AuthService.logout();
-        window.location.href = '/login';
+        window.location.href = "/login";
+        return Promise.reject(e);
+      }
     }
 
-    return Promise.reject(error);
+    // clear token and redirect to login page
+    AuthService.logout();
+    window.location.href = "/login";
+  }
+
+  return Promise.reject(error);
 };
 
 export const successHandler = (response: AxiosResponse): ApiResponse<any> => {
-    return {
-        data: response.data,
-        status: response.status,
-    }
+  return {
+    data: response.data,
+    status: response.status,
+  };
 };

@@ -1,70 +1,79 @@
 import client from "@/api/axios/axiosConfig.ts";
 import {
-    AccessTokenPayload,
-    AuthResponse,
-    CredentialsParams,
-    CredentialsPayload, ForgotPasswordParams, GoogleLoginParams, RefreshTokenParams,
+  AuthResponse,
+  CredentialsParams,
+  CredentialsPayload,
+  ForgotPasswordParams,
+  GoogleLoginParams,
+  RefreshTokenParams,
 } from "@/types/apis";
-import {removeTokens, setAccessToken, setRefreshToken} from "@/helpers";
+import { removeTokens, setAccessToken, setRefreshToken } from "@/helpers";
 
-const API_URL = '/auth';
+const API_URL = "/auth";
 
-const login = async (data: CredentialsParams)  => {
-   return client.post<AuthResponse<CredentialsPayload>>(`${API_URL}/login`, data).then((response) => {
-       if (response.data) {
-           const {accessToken, refreshToken} = response.data.data;
-           setAccessToken(accessToken);
+const login = async (data: CredentialsParams) => {
+  return client
+    .post<AuthResponse<CredentialsPayload>>(`${API_URL}/login`, data)
+    .then((response) => {
+      if (response.data) {
+        const { accessToken, refreshToken } = response.data.data;
+        setAccessToken(accessToken);
 
-           if (refreshToken) {
-               setRefreshToken(refreshToken);
-           }
-       }
+        if (refreshToken) {
+          setRefreshToken(refreshToken);
+        }
+      }
 
-       return response;
-   });
-}
+      return response;
+    });
+};
 
 const register = async (data: CredentialsParams) => {
-    return client.post<AuthResponse<CredentialsPayload>>(`${API_URL}/register`, data);
-}
+  return client.post<AuthResponse<CredentialsPayload>>(
+    `${API_URL}/register`,
+    data,
+  );
+};
 
 const logout = () => {
-    removeTokens();
-}
+  removeTokens();
+};
 
 const loginWithGoogle = async (data: GoogleLoginParams) => {
-    return client.post<AuthResponse<AccessTokenPayload>>(`${API_URL}/google`, data).then((response) => {
-        if (response.data) {
-            const {accessToken} = response.data.data;
-            setAccessToken(accessToken);
-        }
+  return client
+    .post<AuthResponse<CredentialsPayload>>(`${API_URL}/google`, data)
+    .then((response) => {
+      if (response.data) {
+        const { accessToken, refreshToken } = response.data.data;
+        setAccessToken(accessToken);
 
-        return response;
+        if (refreshToken) {
+          setRefreshToken(refreshToken);
+        }
+      }
+
+      return response;
     });
-}
+};
 
 const refreshToken = async (data: RefreshTokenParams) => {
-    return client.post<AuthResponse<AccessTokenPayload>>(`${API_URL}/refresh`, data).then((response) => {
-        if (response.data) {
-            const {accessToken} = response.data.data;
-            setAccessToken(accessToken)
-        }
-
-        return response;
-    });
-}
+  return client.post<AuthResponse<CredentialsPayload>>(
+    `${API_URL}/refresh`,
+    data,
+  );
+};
 
 const forgotPassword = (data: ForgotPasswordParams) => {
-    return client.post(`${API_URL}/forgot-password`, data);
-}
+  return client.post(`${API_URL}/forgot-password`, data);
+};
 
 const AuthService = {
-    login,
-    register,
-    logout,
-    refreshToken,
-    forgotPassword,
-    loginWithGoogle
-}
+  login,
+  register,
+  logout,
+  refreshToken,
+  forgotPassword,
+  loginWithGoogle,
+};
 
 export default AuthService;

@@ -11,7 +11,7 @@ import {
 const QUESTION_API_URL = '/questions';
 const CATEGORY_API_URL = '/categories';
 
-const getQuestions = async (data: QueryParams): Promise<ApiResponse<Resource<QuestionAttributes>>> => {
+const getQuestions = async (data?: QueryParams): Promise<ApiResponse<Resource<QuestionAttributes>[]>> => {
     const response = await client.get(QUESTION_API_URL, {params: data});
     return response.data;
 }
@@ -33,7 +33,7 @@ const getQuestionById = async (id: string) : Promise<ApiResponse<Resource<Questi
     return response.data;
 }
 
-const getCategories = async (data?: QueryParams): Promise<ApiResponse<Resource<CategoryAttributes>>> => {
+const getCategories = async (data?: QueryParams): Promise<ApiResponse<Resource<CategoryAttributes>[]>> => {
     const response = await client.get(CATEGORY_API_URL, {params: data});
     return response.data;
 }

@@ -2,15 +2,17 @@ import {lazy} from "react";
 import Loadable from "@components/Loadable.tsx";
 import {Protected} from "@/routes/AuthMiddleware.tsx";
 import MainLayout from "@/layouts/MainLayout/MainLayout.tsx";
-import ErrorNotFound from "@/pages/errors/ErrorNotFound.tsx";
+import ErrorNotFound from "@/pages/errors/ErrorNotFound";
 
 const UserList = Loadable(lazy(()=> import("@/pages/users/UserList.tsx")));
 const UserDetail = Loadable(lazy(()=> import("@/pages/users/UserDetail.tsx")))
 const CreateOrUpdateQuestion = Loadable(lazy(()=> import("@/pages/question/CreateOrUpdateQuestion.tsx")))
 const QuestionBank = Loadable(lazy(()=> import("@/pages/question/QuestionBank.tsx")))
-const GroupList = Loadable(lazy(()=> import("@/pages/groups/GroupList.tsx")))
-const CreateTest = Loadable(lazy(()=> import("@/pages/tests/CreateTest.tsx")))
+// const GroupList = Loadable(lazy(()=> import("@/pages/groups/GroupList.tsx")))
+// const CreateTest = Loadable(lazy(()=> import("@/pages/assessments/CreateTest.tsx")))
 const QuestionDetail = Loadable(lazy(()=> import("@/pages/question/QuestionDetail.tsx")))
+const Dashboard = Loadable(lazy(()=> import("@/pages/assessments/AssessmentPagination.tsx")))
+const TakeAssessment = Loadable(lazy(()=> import("@/pages/assessments/TakeAssessment.tsx")))
 
 const MainRoutes = {
     path: "/",
@@ -20,6 +22,10 @@ const MainRoutes = {
         </Protected>,
     children: [
         {
+            path: "/dashboard",
+            element: <Dashboard />,
+        },
+        {
             path: "/users",
             element: <UserList />,
         },
@@ -27,10 +33,10 @@ const MainRoutes = {
             path: "/users/:id",
             element: <UserDetail />,
         },
-        {
-            path: "/groups",
-            element: <GroupList />,
-        },
+        // {
+        //     path: "/groups",
+        //     element: <GroupList />,
+        // },
         {
             path: '/questions/create',
             element: <CreateOrUpdateQuestion />,
@@ -47,9 +53,13 @@ const MainRoutes = {
             path: '/questions',
             element: <QuestionBank />,
         },
+        // {
+        //     path: '/assessments/create',
+        //     element: <CreateTest />,
+        // },
         {
-            path: '/tests/create',
-            element: <CreateTest />,
+            path: '/assessments/:id/take',
+            element: <TakeAssessment />,
         },
         {
             path: "*",
