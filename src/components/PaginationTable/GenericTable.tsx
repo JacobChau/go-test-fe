@@ -7,7 +7,6 @@ import {
     TableBody,
     TableCell,
     TableContainer,
-    TableFooter,
     TableHead,
     TablePagination,
     TableRow,
@@ -75,6 +74,17 @@ interface GenericTableProps {
     renderFilterComponent?: (onFilter: (filters: any) => void) => React.ReactNode;
     onAddNewRecord?: () => void;
 }
+
+
+const stickyActionStyle = {
+    position: 'sticky',
+    right: 0,
+    backgroundColor: '#0096C7',
+    zIndex: 5,
+    padding: '0',
+    textAlign: 'center',
+    minWidth: '100px',
+};
 
 
 const GenericTable: React.FC<GenericTableProps> = ({
@@ -171,15 +181,15 @@ const GenericTable: React.FC<GenericTableProps> = ({
                             onSave={handleSaveForm}
                         />
                     )}
-                        <TableContainer sx={{ position: 'relative' }}>
+                        <TableContainer component={Box} sx={{maxWidth: '100%', overflowX: 'auto' }}>
                             {loading && (
                                 <Box
                                     sx={{
                                         position: 'absolute',
                                         top: 0,
                                         left: 0,
-                                        width: '100%',
-                                        height: '100%',
+                                        right: 0,
+                                        bottom: 0,
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
@@ -190,7 +200,7 @@ const GenericTable: React.FC<GenericTableProps> = ({
                                     <CircularProgress />
                                 </Box>
                             )}
-                            <Table aria-label={title}>
+                            <Table aria-label={title} stickyHeader>
                                 <TableHead>
                                     <TableRow>
                                         {columns.map((column, index) => (
@@ -198,9 +208,10 @@ const GenericTable: React.FC<GenericTableProps> = ({
                                                 <Typography variant="h6">{column.label}</Typography>
                                             </TableCell>
                                         ))}
-                                        {(actions && !readonly) && <TableCell sx={{ p: 0, textAlign: 'center', width: '10%' }}>
-                                            <Typography variant="h6">Action</Typography>
-                                        </TableCell>
+                                        {(actions && !readonly) &&
+                                            <TableCell style={stickyActionStyle}>
+                                                <Typography variant="h6">Action</Typography>
+                                            </TableCell>
                                         }
                                     </TableRow>
                                 </TableHead>
@@ -281,7 +292,7 @@ const GenericTable: React.FC<GenericTableProps> = ({
                                             </TableCell>
                                         ))}
                                         {actions && !readonly && (
-                                            <TableCell sx={{ p: 0, textAlign: 'center', width: '10%' }}>
+                                            <TableCell style={stickyActionStyle}>
                                                 {editingRow === rowIndex ? (
                                                     // Display Save button in edit mode
                                                     <Button
@@ -303,22 +314,20 @@ const GenericTable: React.FC<GenericTableProps> = ({
                                     </TableRow>
                                 ))}
                             </TableBody>
-                            <TableFooter>
-                                <TableRow>
-                                    <TablePagination
-                                        rowsPerPageOptions={[5, 10, 25, { label: 'All', value: 999999 }]}
-                                        colSpan={columns.length + (actions ? 1 : 0)}
-                                        count={totalRows}
-                                        rowsPerPage={rowsPerPage}
-                                        page={page}
-                                        onPageChange={onPageChange}
-                                        onRowsPerPageChange={onRowsPerPageChange}
-                                        ActionsComponent={ActionTable}
-                                    />
-                                </TableRow>
-                            </TableFooter>
                         </Table>
                     </TableContainer>
+                    <TablePagination
+                        component={Box}
+                        sx={{ float: 'right' }}
+                        rowsPerPageOptions={[5, 10, 25, { label: 'All', value: 999999 }]}
+                        colSpan={columns.length + (actions ? 1 : 0)}
+                        count={totalRows}
+                        rowsPerPage={rowsPerPage}
+                        page={page}
+                        onPageChange={onPageChange}
+                        onRowsPerPageChange={onRowsPerPageChange}
+                        ActionsComponent={ActionTable}
+                    />
                 </BlankCard>
             </ParentCard>
         </PageContainer>

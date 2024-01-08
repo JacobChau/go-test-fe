@@ -12,7 +12,7 @@ const QuestionColumns: TableColumn[] = [
         type: 'text',
         canEdit: true,
         canSearch: true,
-        sx: { width: '55%', padding: '0 1rem' },
+        sx: { width: '70%' },
         render: (value: QuestionAttributes) => {
             const replaceImageTag = (content: string) => {
                 const imgRegex = /<img\s+([^>]*)src="([^"]+)"([^>]*)>/g;
@@ -49,7 +49,7 @@ const QuestionColumns: TableColumn[] = [
           return <span>{QuestionType[value.type]}</span>
         }
     },
-    { label: 'Category', key: 'category', type: 'text', canEdit: true, sx: { width: '10%' }, canSearch: true },
+    { label: 'Category', key: 'category', type: 'text', canEdit: true, sx: { width: '20%' }, canSearch: true },
 ];
 
 export default QuestionColumns;

@@ -7,9 +7,10 @@ import ErrorNotFound from "@/pages/errors/ErrorNotFound.tsx";
 const UserList = Loadable(lazy(()=> import("@/pages/users/UserList.tsx")));
 const UserDetail = Loadable(lazy(()=> import("@/pages/users/UserDetail.tsx")))
 const CreateOrUpdateQuestion = Loadable(lazy(()=> import("@/pages/question/CreateOrUpdateQuestion.tsx")))
+const CreateOrUpdateTest = Loadable(lazy(()=> import("@/pages/tests/CreateOrUpdateTest.tsx")))
 const QuestionBank = Loadable(lazy(()=> import("@/pages/question/QuestionBank.tsx")))
 const GroupList = Loadable(lazy(()=> import("@/pages/groups/GroupList.tsx")))
-const CreateTest = Loadable(lazy(()=> import("@/pages/tests/CreateTest.tsx")))
+const TestList = Loadable(lazy(()=> import("@/pages/tests/TestList.tsx")))
 const QuestionDetail = Loadable(lazy(()=> import("@/pages/question/QuestionDetail.tsx")))
 
 const MainRoutes = {
@@ -44,12 +45,20 @@ const MainRoutes = {
             element: <CreateOrUpdateQuestion />,
         },
         {
-            path: '/questions',
-            element: <QuestionBank />,
+            path: '/tests/create',
+            element: <CreateOrUpdateTest />,
         },
         {
-            path: '/tests/create',
-            element: <CreateTest />,
+            path: '/tests/:id/edit',
+            element: <CreateOrUpdateTest />,
+        },
+        {
+            path: '/tests',
+            element: <TestList />,
+        },
+        {
+            path: '/questions',
+            element: <QuestionBank />,
         },
         {
             path: "*",

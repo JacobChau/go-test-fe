@@ -374,11 +374,18 @@ export function theme() {
             MuiTableCell: {
                 styleOverrides: {
                     root: {
-                        whiteSpace: 'normal'
+                        whiteSpace: 'normal',
+                        color: textDark,
                     },
                     head: {
+                        padding: '1rem',
                         color: textDark,
-                        fontWeight: 600
+                        fontWeight: 600,
+                        backgroundColor: paperWhite,
+                    },
+                    body: {
+                        padding: '1rem',
+                        color: textDark,
                     },
                     paddingCheckbox: {
                         paddingLeft: '18px',
@@ -442,7 +449,7 @@ export function theme() {
                 styleOverrides: {
                     input: {
                         color: textDark,
-                        padding: '0px 12px'
+                        padding: '1rem',
                     },
                 },
             },
