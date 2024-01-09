@@ -33,7 +33,8 @@ export interface QuestionDetailPayload {
 export interface AssessmentQuestionAttributes {
     content: string;
     type: keyof typeof QuestionType;
-    mark: number;
+    marks: number;
+    order: number | null;
 }
 
 export interface UpdateQuestionParams {

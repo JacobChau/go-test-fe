@@ -1,17 +1,7 @@
-import { useState, useCallback, useEffect, SetStateAction} from 'react';
+import { useState, useCallback, useEffect} from 'react';
 import {SearchColumn, SearchCriteria} from "@components/Search/SearchComponent.tsx";
-import {ApiResponse, Identity, PaginationState, Resource} from "@/types/apis";
+import {ApiResponse, Identity, PaginationState, QueryParams, Resource} from "@/types/apis";
 import {SearchType} from "@/constants/search.ts";
-
-interface FetchParams {
-    page: number;
-    perPage: number;
-    searchType: string;
-    searchKeyword: string;
-    searchColumn?: string;
-    filters: any;
-}
-
 
 interface UseFetchDataReturn<ItemType> {
     items: ItemType[];
@@ -32,7 +22,7 @@ interface UseFetchDataReturn<ItemType> {
 }
 
 function useFetchData<ItemType>(
-    fetchFunction: (params: FetchParams) => Promise<ApiResponse<Resource<ItemType>>>,
+    fetchFunction: (data?: QueryParams) => Promise<ApiResponse<Resource<ItemType>[]>>,
     initialPagination: PaginationState,
     searchColumn?: SearchColumn
 ): UseFetchDataReturn<ItemType & Identity> {
@@ -105,18 +95,20 @@ function useFetchData<ItemType>(
     }, [pagination.perPage, pagination.page]);
 
 
-    const handleSearchChange = (criteria: SetStateAction<SearchCriteria>) => {
+    const handleSearchChange = useCallback((criteria: SearchCriteria) => {
         setSearchCriteria(criteria);
-        setPagination({...initialPagination, page: 0});
-    }
-    const handleSearchTermChange = (term: SetStateAction<string>) => {
+        setPagination({ ...initialPagination, page: 0 });
+    }, [initialPagination]);
+
+    const handleSearchTermChange = useCallback((term: string) => {
         setDebouncedSearchTerm(term);
-        setPagination({...initialPagination, page: 0});
-    }
-    const handleFilterChange = (newFilters: SetStateAction<{}>) => {
+        setPagination({ ...initialPagination, page: 0 });
+    }, [initialPagination]);
+
+    const handleFilterChange = useCallback((newFilters: any) => {
         setFilters(newFilters);
-        setPagination({...initialPagination, page: 0});
-    }
+        setPagination({ ...initialPagination, page: 0 });
+    }, [initialPagination]);
 
     return {
         items,

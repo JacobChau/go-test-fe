@@ -1,9 +1,9 @@
 import client from "@/api/axios/axiosConfig.ts";
-import {ApiResponse, CreateSubjectParams, PaginationParams, SubjectAttributes} from "@/types/apis";
+import {ApiResponse, CreateSubjectParams, QueryParams, Resource, SubjectAttributes} from "@/types/apis";
 
 const API_URL = '/subjects';
 
-const getSubjects = async (data?: PaginationParams): Promise<ApiResponse<SubjectAttributes>> => {
+const getSubjects = async (data?: QueryParams): Promise<ApiResponse<Resource<SubjectAttributes>[]>> => {
     const response = await client.get(API_URL, {params: data});
     return response.data;
 }

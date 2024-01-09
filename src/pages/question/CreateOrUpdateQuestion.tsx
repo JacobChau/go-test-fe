@@ -84,7 +84,7 @@ const CreateOrUpdateQuestion = () => {
 
     const handleConfirmSave = async () => {
         setConfirmOpen(false);
-        await handleSubmit(); // Your existing handleSubmit function
+        await handleSubmit();
     };
 
     const handleCloseConfirm = () => {
