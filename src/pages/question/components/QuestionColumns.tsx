@@ -5,28 +5,21 @@ import { QuestionAttributes } from "@/types/apis";
 import { Box } from "@mui/material";
 
 const QuestionColumns: TableColumn[] = [
-  {
-    label: "ID",
-    key: "id",
-    type: "text",
-    canEdit: false,
-    canSearch: false,
-    sx: { width: "5%" },
-  },
-  {
-    label: "Question Details",
-    key: "content",
-    type: "text",
-    canEdit: true,
-    canSearch: true,
-    sx: { width: "55%", padding: "0 1rem" },
-    render: (value: QuestionAttributes) => {
-      const replaceImageTag = (content: string) => {
-        const imgRegex = /<img\s+([^>]*)src="([^"]+)"([^>]*)>/g;
-        return content.replace(imgRegex, (_match, prefix, src, suffix) => {
-          return `<img ${prefix}src="${src}" style="max-width:100%;height:auto;" ${suffix} alt="Question Image"/>`;
-        });
-      };
+    { label: 'ID', key: 'id', type: 'text', canEdit: false, canSearch: false, sx: { width: '5%' } },
+    {
+        label: 'Question Details',
+        key: 'content',
+        type: 'text',
+        canEdit: true,
+        canSearch: true,
+        sx: { width: '70%' },
+        render: (value: QuestionAttributes) => {
+            const replaceImageTag = (content: string) => {
+                const imgRegex = /<img\s+([^>]*)src="([^"]+)"([^>]*)>/g;
+                return content.replace(imgRegex, (_match, prefix, src, suffix) => {
+                    return `<img ${prefix}src="${src}" style="max-width:100%;height:auto;" ${suffix} alt="Question Image"/>`;
+                });
+            };
 
       if (value.content.includes("<img")) {
         const contentWithResizedImages = replaceImageTag(value.content);
@@ -47,15 +40,7 @@ const QuestionColumns: TableColumn[] = [
     render: (value: QuestionAttributes) => {
       return <span>{QuestionType[value.type]}</span>;
     },
-  },
-  {
-    label: "Category",
-    key: "category",
-    type: "text",
-    canEdit: true,
-    sx: { width: "10%" },
-    canSearch: true,
-  },
+    { label: 'Category', key: 'category', type: 'text', canEdit: true, sx: { width: '20%' }, canSearch: true },
 ];
 
 export default QuestionColumns;

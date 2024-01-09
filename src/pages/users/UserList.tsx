@@ -22,11 +22,7 @@ const UserSearchColumn: SearchColumn[] = [
 
 
 const UserListPage = () => {
-    const {items: users, fetchData: fetchUsers,searchTerm, searchCriteria, handleSearchTermChange, handleSearchChange, loading, setLoading, error, setError, pagination, handlePageChange, handleRowsPerPageChange} = useFetchData<UserAttributes>(
-        UserService.getUsers,
-        initialPagination,
-        UserSearchColumn[0]
-    );
+    const {items: users, fetchData: fetchUsers,searchTerm, searchCriteria, handleSearchTermChange, handleSearchChange, loading, setLoading, error, setError, pagination, handlePageChange, handleRowsPerPageChange} = useFetchData<UserAttributes>(UserService.getUsers, initialPagination, UserSearchColumn[0]);
 
     const handleUserUpdated = async (_id: string, updatedUser: UserAttributes) => {
         setLoading(true);
@@ -63,7 +59,6 @@ const UserListPage = () => {
         fetchUsers();
     }
 
-    console.log(users);
     return (
         <>
             <Snackbar open={Boolean(error)} autoHideDuration={6000} onClose={() => setError(null)}>

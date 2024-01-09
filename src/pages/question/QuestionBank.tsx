@@ -1,4 +1,4 @@
-import {PaginationState, QuestionAttributes} from "@/types/apis";
+import {QuestionAttributes} from "@/types/apis";
 import QuestionService from "@/api/services/questionService.ts";
 import {Alert, Snackbar} from "@mui/material";
 import {GenericTable} from "@components/PaginationTable";
@@ -7,21 +7,13 @@ import {ActionTableProps} from "@components/PaginationTable/GenericTable.tsx";
 import QuestionFilters from "@/pages/question/components/QuestionFilters.tsx";
 import {useNavigate} from "react-router-dom";
 import {useFetchData} from "@/hooks";
-
-const initialPagination: PaginationState  = {
-    page: 0,
-    perPage: 5,
-    total: 0
-};
+import {initialPagination} from "@/config";
 
 const QuestionListPage = () => {
     const navigate = useNavigate();
 
-    const {items: questions, searchTerm, filters, searchCriteria, handleSearchTermChange, handleSearchChange, loading, setLoading, error, setError, pagination, handlePageChange, handleRowsPerPageChange, handleFilterChange} = useFetchData<QuestionAttributes>(
-        QuestionService.getQuestions,
-        initialPagination,
-        QuestionSearchColumn[0]
-    );
+    const {items: questions, searchTerm, filters, searchCriteria, handleSearchTermChange, handleSearchChange, loading, setLoading, error, setError, pagination, handlePageChange, handleRowsPerPageChange, handleFilterChange} =
+        useFetchData<QuestionAttributes>(QuestionService.getQuestions, initialPagination, QuestionSearchColumn[0]);
 
     const handleQuestionDeleted = async (_id: string) => {
         setLoading(true);

@@ -23,7 +23,7 @@ import ParentCard from "@components/Card/ParentCard.tsx";
 const initialPagination = {
   page: 0,
   perPage: 12,
-  total: 0,
+  total: -1,
 };
 
 const AssessmentPagination = () => {
@@ -56,7 +56,7 @@ const AssessmentPagination = () => {
   };
 
   const handleTakeAssessment = (assessmentId: number) => {
-    navigate(`/assessments/${assessmentId}/take`, { state: { assessmentId } });
+    navigate(`/tests/${assessmentId}/take`, { state: { assessmentId } });
   };
 
   const handleMaterialUIPageChange = (

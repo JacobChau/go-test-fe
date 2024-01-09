@@ -11,6 +11,7 @@ import {
   AssessmentResultPayload,
   CreateAssessmentAttemptParams,
   CreateAssessmentAttemptPayload,
+  CreateAssessmentParams,
   SubmitAssessmentAttemptParams,
   SubmitAssessmentAttemptPayload,
 } from "@/types/apis/assessmentTypes.ts";
@@ -24,8 +25,16 @@ const getAssessments = async (
   return response.data;
 };
 
+const createAssessment = async (data: CreateAssessmentParams) => {
+  return await client.post(ASSESSMENT_API_URL, data);
+};
+
+const updateAssessment = async (id: string, data: CreateAssessmentParams) => {
+  return await client.put(`${ASSESSMENT_API_URL}/${id}`, data);
+};
+
 const getAssessmentById = async (
-  id: number,
+  id: string,
 ): Promise<ApiResponse<Resource<AssessmentDetailPayload>>> => {
   const response = await client.get(`${ASSESSMENT_API_URL}/${id}`);
   return response.data;
@@ -69,6 +78,10 @@ const getAssessmentResult = async (
   return response.data;
 };
 
+const deleteAssessment = async (id: string) => {
+  return await client.delete(`${ASSESSMENT_API_URL}/${id}`);
+};
+
 const AssessmentService = {
   getAssessments,
   getAssessmentById,
@@ -76,6 +89,9 @@ const AssessmentService = {
   createOrFetchAssessmentAttempt,
   submitAssessmentAttempt,
   getAssessmentResult,
+  createAssessment,
+  updateAssessment,
+  deleteAssessment,
 };
 
 export default AssessmentService;

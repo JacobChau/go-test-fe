@@ -2,12 +2,7 @@ import { AxiosError, AxiosResponse } from "axios";
 import { ApiResponse } from "@/types/apis";
 import AuthService from "@/api/services/authService.ts";
 import client from "@/api/axios/axiosConfig.ts";
-import {
-  getAccessToken,
-  getRefreshToken,
-  setAccessToken,
-  setRefreshToken,
-} from "@/helpers";
+import { getRefreshToken, setAccessToken, setRefreshToken } from "@/helpers";
 
 export const errorHandler = async (error: AxiosError) => {
   if (error.config && error.response && error.response.status === 401) {

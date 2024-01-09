@@ -90,10 +90,10 @@ const CreateOrUpdateQuestion = () => {
     setConfirmOpen(true);
   };
 
-  const handleConfirmSave = async () => {
-    setConfirmOpen(false);
-    await handleSubmit(); // Your existing handleSubmit function
-  };
+    const handleConfirmSave = async () => {
+        setConfirmOpen(false);
+        await handleSubmit();
+    };
 
   const handleCloseConfirm = () => {
     setConfirmOpen(false);

@@ -12,8 +12,7 @@ const CreateOrUpdateQuestion = Loadable(
 const QuestionBank = Loadable(
   lazy(() => import("@/pages/question/QuestionBank.tsx")),
 );
-// const GroupList = Loadable(lazy(()=> import("@/pages/groups/GroupList.tsx")))
-// const CreateTest = Loadable(lazy(()=> import("@/pages/assessments/CreateTest.tsx")))
+const GroupList = Loadable(lazy(() => import("@/pages/groups/GroupList.tsx")));
 const QuestionDetail = Loadable(
   lazy(() => import("@/pages/question/QuestionDetail.tsx")),
 );
@@ -25,6 +24,13 @@ const TakeAssessment = Loadable(
 );
 const AssessmentResult = Loadable(
   lazy(() => import("@/pages/assessments/AssessmentResult.tsx")),
+);
+
+const CreateOrUpdateTest = Loadable(
+  lazy(() => import("@/pages/assessments/CreateOrUpdateAssessment.tsx")),
+);
+const TestList = Loadable(
+  lazy(() => import("@/pages/assessments/AssessmentList.tsx")),
 );
 
 const MainRoutes = {
@@ -47,10 +53,10 @@ const MainRoutes = {
       path: "/users/:id",
       element: <UserDetail />,
     },
-    // {
-    //     path: "/groups",
-    //     element: <GroupList />,
-    // },
+    {
+      path: "/groups",
+      element: <GroupList />,
+    },
     {
       path: "/questions/create",
       element: <CreateOrUpdateQuestion />,
@@ -67,16 +73,24 @@ const MainRoutes = {
       path: "/questions",
       element: <QuestionBank />,
     },
-    // {
-    //     path: '/assessments/create',
-    //     element: <CreateTest />,
-    // },
     {
-      path: "/assessments/:id/take",
+      path: "/tests/create",
+      element: <CreateOrUpdateTest />,
+    },
+    {
+      path: "/tests/:id/edit",
+      element: <CreateOrUpdateTest />,
+    },
+    {
+      path: "/tests",
+      element: <TestList />,
+    },
+    {
+      path: "/tests/:id/take",
       element: <TakeAssessment />,
     },
     {
-      path: "/assessments/:id/results/:attemptId",
+      path: "/tests/:id/results/:attemptId",
       element: <AssessmentResult />,
     },
     {
