@@ -11,7 +11,10 @@ import {
 } from "@mui/material";
 import parse from "html-react-parser";
 
-import { QuestionDisplay } from "@/pages/assessments/components";
+import {
+  AssessmentResult,
+  QuestionDisplay,
+} from "@/pages/assessments/components";
 import { Option } from "@/pages/question/CreateOrUpdateQuestion.tsx";
 import {
   ExplanationAttributes,
@@ -21,13 +24,17 @@ import {
 import { QuestionType } from "@/constants/question";
 import { styled } from "@mui/material/styles";
 import PageContainer from "@components/Container/PageContainer.tsx";
-import { AssessmentDetailPayload } from "@/types/apis/assessmentTypes.ts";
+import {
+  AssessmentDetailPayload,
+  SubmitAssessmentAttemptPayload,
+} from "@/types/apis/assessmentTypes.ts";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import AssessmentService from "@/api/services/assessmentService.ts";
 import ConfirmationDialog from "@components/Dialog/ConfirmationDialog.tsx";
 import { useDispatch, useSelector } from "react-redux";
 import { setMessageWithTimeout } from "@/stores/messageSlice.ts";
 import { AppDispatch, RootState } from "@/stores/store.ts";
+import { useWarnBeforeLeaving } from "@/hooks";
 
 export interface QuestionDisplayData {
   id: number;
@@ -106,43 +113,53 @@ const TakeAssessment: React.FC = () => {
   const { message } = useSelector((state: RootState) => state.message);
 
   const [attemptId, setAttemptId] = useState<number | null>(null);
+  const [openResultsPopup, setOpenResultsPopup] = useState<boolean>(false);
 
+  const [assessmentResults, setAssessmentResults] =
+    useState<SubmitAssessmentAttemptPayload | null>(null);
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
-
   const [loading, setLoading] = useState<boolean>(false);
-
   const timerRef = useRef<number | null>(null);
 
+  useWarnBeforeLeaving(
+    attemptId != null,
+    "Are you sure you want to leave this page? Your answers will not be saved if you dont submit the assessment.",
+  );
+
   const handleSubmit = useCallback(() => {
-    console.log("user responses", responses);
-
-    const formattedResponses = responses.map((response) => ({
-      questionId: response.questionId,
-      answer:
-        response.answer instanceof Set
-          ? Array.from(response.answer)
-          : response.answer,
-    }));
-
     if (id) {
+      console.log("user responses", responses);
+
+      const formattedResponses = responses.map((response) => ({
+        questionId: response.questionId,
+        answer:
+          response.answer instanceof Set
+            ? Array.from(response.answer)
+            : response.answer,
+      }));
+
       AssessmentService.submitAssessmentAttempt(id, {
         attemptId: attemptId as number,
         answers: formattedResponses,
-      }).catch((err) => {
-        dispatch(
-          setMessageWithTimeout({ message: err.message, isError: true }),
-        );
-      });
+      })
+        .then((data) => {
+          setAssessmentResults(data.data);
+          setOpenResultsPopup(true);
+        })
+        .catch((err) => {
+          dispatch(
+            setMessageWithTimeout({ message: err.message, isError: true }),
+          );
+        });
     }
   }, [id, attemptId, dispatch, responses]);
 
-  const createAssessmentAttempt = useCallback(async () => {
+  const createOrFetchAttempt = useCallback(async () => {
     if (id) {
-      const { data, message } = await AssessmentService.createAssessmentAttempt(
-        {
+      const { data, message } =
+        await AssessmentService.createOrFetchAssessmentAttempt({
           assessmentId: id,
-        },
-      );
+        });
 
       if (!data.canStart) {
         dispatch(setMessageWithTimeout({ message, isError: true }));
@@ -156,22 +173,21 @@ const TakeAssessment: React.FC = () => {
   useEffect(() => {
     // Check if the user navigated directly to the URL
     if (location.state?.assessmentId) {
-      createAssessmentAttempt().catch((err) => {
+      createOrFetchAttempt().catch((err) => {
         dispatch(
           setMessageWithTimeout({ message: err.message, isError: true }),
         );
         navigate("/dashboard");
       });
     } else {
-      // User navigated directly using URL
       setShowConfirmation(true);
     }
-  }, [createAssessmentAttempt, dispatch, location.state, navigate]);
+  }, [createOrFetchAttempt, dispatch, location.state, navigate]);
 
   const handleConfirmation = (confirmed: boolean) => {
     setShowConfirmation(false);
     if (confirmed) {
-      createAssessmentAttempt().catch((err) => {
+      createOrFetchAttempt().catch((err) => {
         dispatch(
           setMessageWithTimeout({ message: err.message, isError: true }),
         );
@@ -260,19 +276,6 @@ const TakeAssessment: React.FC = () => {
       dispatch(setMessageWithTimeout({ message: err.message, isError: true }));
     });
   }, [dispatch, fetchData]);
-
-  if (loading || !assessment || !questions) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="100vh"
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
 
   if (message) {
     return (
@@ -416,89 +419,107 @@ const TakeAssessment: React.FC = () => {
 
   const currentQuestion = questions[currentQuestionIndex];
 
+  console.log("attemptId", attemptId);
   return (
     <PageContainer
       title={assessment?.name || "Take Assessment"}
       description={assessment?.description}
     >
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={9}>
-          <MainContent>
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <Typography variant="h6">
-                Question {currentQuestionIndex + 1}
-              </Typography>
-              <Typography variant="h6">{formatTime()}</Typography>
-            </Box>
-            <Box sx={{ mt: 2 }}>
-              <QuestionDisplay
-                question={currentQuestion}
-                selectedOption={
-                  responses.find((r) => r.questionId === currentQuestion.id)
-                    ?.answer || getDefaultValue(currentQuestion?.type)
-                }
-                onSelectOption={handleOptionSelect}
-              />
-            </Box>
-            <Box sx={{ mt: 2 }}>
-              <Button
-                variant="contained"
-                disabled={currentQuestionIndex === 0}
-                onClick={() => navigateQuestions("prev")}
+      {loading || !assessment || !questions ? (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height="100vh"
+        >
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={9}>
+            <MainContent>
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
               >
-                Previous
-              </Button>
-              <Button
-                variant="contained"
-                disabled={currentQuestionIndex === questions.length - 1}
-                onClick={() => navigateQuestions("next")}
-                sx={{ ml: 2 }}
+                <Typography variant="h6">
+                  Question {currentQuestionIndex + 1}
+                </Typography>
+                <Typography variant="h6">{formatTime()}</Typography>
+              </Box>
+              <Box sx={{ mt: 2 }}>
+                <QuestionDisplay
+                  question={currentQuestion}
+                  selectedOption={
+                    responses.find((r) => r.questionId === currentQuestion.id)
+                      ?.answer || getDefaultValue(currentQuestion?.type)
+                  }
+                  onSelectOption={handleOptionSelect}
+                />
+              </Box>
+              <Box sx={{ mt: 2 }}>
+                <Button
+                  variant="contained"
+                  disabled={currentQuestionIndex === 0}
+                  onClick={() => navigateQuestions("prev")}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="contained"
+                  disabled={currentQuestionIndex === questions.length - 1}
+                  onClick={() => navigateQuestions("next")}
+                  sx={{ ml: 2 }}
+                >
+                  Next
+                </Button>
+              </Box>
+            </MainContent>
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <Sidebar>
+              <Typography variant="h6">Questions</Typography>
+              <Grid
+                container
+                key={currentQuestionIndex}
+                sx={{ mt: 2 }}
+                spacing={1}
+                columns={10}
               >
-                Next
+                {questions.map((question, index) => (
+                  <Grid item xs={2} key={question.id}>
+                    <QuestionButton
+                      variant={
+                        index === currentQuestionIndex ? "contained" : "text"
+                      }
+                      onClick={() => setCurrentQuestionIndex(index)}
+                      answered={isQuestionAnswered(question.id)}
+                    >
+                      {index + 1}
+                    </QuestionButton>
+                  </Grid>
+                ))}
+              </Grid>
+              <Box sx={{ flexGrow: 1 }} />
+              <Button variant="contained" onClick={handleSubmit}>
+                Submit
               </Button>
-            </Box>
-          </MainContent>
+            </Sidebar>
+          </Grid>
         </Grid>
-        <Grid item xs={12} md={3}>
-          <Sidebar>
-            <Typography variant="h6">Questions</Typography>
-            <Grid
-              container
-              key={currentQuestionIndex}
-              sx={{ mt: 2 }}
-              spacing={1}
-              columns={10}
-            >
-              {questions.map((question, index) => (
-                <Grid item xs={2} key={question.id}>
-                  <QuestionButton
-                    variant={
-                      index === currentQuestionIndex ? "contained" : "text"
-                    }
-                    onClick={() => setCurrentQuestionIndex(index)}
-                    answered={isQuestionAnswered(question.id)}
-                  >
-                    {index + 1}
-                  </QuestionButton>
-                </Grid>
-              ))}
-            </Grid>
-            <Box sx={{ flexGrow: 1 }} />
-            <Button variant="contained" onClick={handleSubmit}>
-              Submit
-            </Button>
-          </Sidebar>
-        </Grid>
-      </Grid>
+      )}
       <ConfirmationDialog
         open={showConfirmation}
         onClose={() => handleConfirmation(false)}
         onConfirm={() => handleConfirmation(true)}
         message="Are you sure you want to start the assessment?"
+      />
+      <AssessmentResult
+        open={openResultsPopup}
+        results={assessmentResults}
+        onClose={() => navigate("/dashboard")}
+        onViewDetails={() => navigate("/assessments/" + id + "/results")}
       />
     </PageContainer>
   );

@@ -8,9 +8,11 @@ import {
 import {
   AssessmentAttributes,
   AssessmentDetailPayload,
+  AssessmentResultPayload,
   CreateAssessmentAttemptParams,
   CreateAssessmentAttemptPayload,
   SubmitAssessmentAttemptParams,
+  SubmitAssessmentAttemptPayload,
 } from "@/types/apis/assessmentTypes.ts";
 
 const ASSESSMENT_API_URL = "/assessments";
@@ -36,7 +38,7 @@ const getQuestionsByAssessmentId = async (
   return response.data;
 };
 
-const createAssessmentAttempt = async (
+const createOrFetchAssessmentAttempt = async (
   data: CreateAssessmentAttemptParams,
 ): Promise<ApiResponse<CreateAssessmentAttemptPayload>> => {
   const response = await client.post(
@@ -49,10 +51,20 @@ const createAssessmentAttempt = async (
 const submitAssessmentAttempt = async (
   assessmentId: string,
   data: SubmitAssessmentAttemptParams,
-): Promise<ApiResponse<CreateAssessmentAttemptPayload>> => {
+): Promise<ApiResponse<SubmitAssessmentAttemptPayload>> => {
   const response = await client.post(
     `${ASSESSMENT_API_URL}/${assessmentId}/submit`,
     data,
+  );
+  return response.data;
+};
+
+const getAssessmentResult = async (
+  assessmentId: string,
+  attemptId: string,
+): Promise<ApiResponse<AssessmentResultPayload>> => {
+  const response = await client.get(
+    `${ASSESSMENT_API_URL}/${assessmentId}/results/${attemptId}`,
   );
   return response.data;
 };
@@ -61,8 +73,9 @@ const AssessmentService = {
   getAssessments,
   getAssessmentById,
   getQuestionsByAssessmentId,
-  createAssessmentAttempt,
+  createOrFetchAssessmentAttempt,
   submitAssessmentAttempt,
+  getAssessmentResult,
 };
 
 export default AssessmentService;

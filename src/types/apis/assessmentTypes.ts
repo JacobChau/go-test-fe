@@ -1,3 +1,6 @@
+import { OptionDetailPayload } from "@/types/apis/questionTypes.ts";
+import { Resource } from "@/types/apis/apiTypes.ts";
+
 export interface AssessmentAttributes {
   name: string;
   description?: string;
@@ -37,4 +40,30 @@ interface UserAnswer {
 export interface SubmitAssessmentAttemptParams {
   attemptId: number;
   answers: UserAnswer[];
+}
+
+export interface SubmitAssessmentAttemptPayload {
+  totalMarks: number;
+  correctAnswers: number;
+  totalQuestions: number;
+}
+
+export interface AssessmentResultPayload {
+  name: string;
+  score: number;
+  totalMarks: number;
+  totalCorrect: number;
+  totalQuestions: number;
+  questions: Array<QuestionResultPayload>;
+}
+
+export interface QuestionResultPayload {
+  content: string;
+  type: string;
+  options?: Resource<OptionDetailPayload>[];
+  marks: number;
+  correctAnswer?: string;
+  userAnswer?: string;
+  isCorrect?: boolean;
+  explanation?: string;
 }
