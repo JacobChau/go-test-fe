@@ -1,25 +1,41 @@
-import React from 'react'
-import { Navigate } from 'react-router-dom'
-import {isAuthenticated} from "@/helpers";
+import React, { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
+import { isAuthenticated } from "@/helpers";
+import UserService from "@/api/services/userService.ts";
+import { rolePermissions } from "@/constants";
+import { Resource, UserAttributes } from "@/types/apis";
 
-const Protected = ({ children })=> {
-    const isLoggedIn = isAuthenticated();
-
-    if (!isLoggedIn) {
-        return <Navigate to="/login" />
-    }
-
-    return children;
+interface ProtectedProps {
+  children: React.ReactNode;
 }
 
-const Public = ({children})=> {
-    const isLoggedIn = isAuthenticated();
+const Protected: React.FC<ProtectedProps> = ({ children }) => {
+  // const [user, setUser] = useState<Resource<UserAttributes> | null>(null);
+  const isLoggedIn = isAuthenticated();
 
-    if (isLoggedIn) {
-        return <Navigate to="/"/>
-    }
+  // useEffect(() => {
+  //   if (isLoggedIn) {
+  //     UserService.getCurrentUser().then((res) => {
+  //       setUser(res.data);
+  //     });
+  //   }
+  // }, [isLoggedIn]);
 
-    return children;
-}
+  if (!isLoggedIn) {
+    return <Navigate to="/login" />;
+  }
 
-export {Protected, Public};
+  return children;
+};
+
+const Public = ({ children }) => {
+  const isLoggedIn = isAuthenticated();
+
+  if (isLoggedIn) {
+    return <Navigate to="/" />;
+  }
+
+  return children;
+};
+
+export { Protected, Public };

@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet';
+import {Helmet} from 'react-helmet';
 
 type Props = {
     description?: string;
@@ -6,11 +6,11 @@ type Props = {
     title?: string;
 };
 
-const PageContainer = ({ title, description, children }: Props) => (
+const PageContainer = ({title, description, children}: Props) => (
     <div>
         <Helmet>
             <title>{title}</title>
-            <meta name="description" content={description} />
+            <meta name="description" content={description}/>
         </Helmet>
         {children}
     </div>
