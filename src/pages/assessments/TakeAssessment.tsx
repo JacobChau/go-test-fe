@@ -15,17 +15,13 @@ import {
   AssessmentResult,
   QuestionDisplay,
 } from "@/pages/assessments/components";
-import { Option } from "@/pages/question/CreateOrUpdateQuestion.tsx";
-import {
-  ExplanationAttributes,
-  Identity,
-  IdentityOptional,
-} from "@/types/apis";
+import { Identity } from "@/types/apis";
 import { QuestionType } from "@/constants/question";
 import { styled } from "@mui/material/styles";
 import PageContainer from "@components/Container/PageContainer.tsx";
 import {
   AssessmentDetailPayload,
+  QuestionResultPayload,
   SubmitAssessmentAttemptPayload,
 } from "@/types/apis/assessmentTypes.ts";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -35,15 +31,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { setMessageWithTimeout } from "@/stores/messageSlice.ts";
 import { AppDispatch, RootState } from "@/stores/store.ts";
 import { useWarnBeforeLeaving } from "@/hooks";
-
-export interface QuestionDisplayData {
-  id: number;
-  text: string | JSX.Element | JSX.Element[];
-  options?: Option[] | null;
-  type: QuestionType;
-  passageId?: string;
-  explanation?: ExplanationAttributes & IdentityOptional;
-}
 
 export interface UserAnswer {
   questionId: number;
@@ -101,15 +88,13 @@ const TakeAssessment: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const location = useLocation();
   const navigate = useNavigate();
-  const [timeLeft, setTimeLeft] = useState(2 * 60); // 20 minutes
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [responses, setResponses] = useState<UserAnswer[]>([]);
   const [assessment, setAssessment] = useState<
-    AssessmentDetailPayload & Identity
+    Omit<AssessmentDetailPayload, "questions"> & Identity
   >();
-  const [questions, setQuestions] = useState<
-    Array<QuestionDisplayData & Identity>
-  >([]);
+  const [questions, setQuestions] = useState<Array<QuestionResultPayload>>([]);
   const { message } = useSelector((state: RootState) => state.message);
 
   const [attemptId, setAttemptId] = useState<number | null>(null);
@@ -121,6 +106,8 @@ const TakeAssessment: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const timerRef = useRef<number | null>(null);
 
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
   useWarnBeforeLeaving(
     attemptId != null,
     "Are you sure you want to leave this page? Your answers will not be saved if you dont submit the assessment.",
@@ -128,7 +115,19 @@ const TakeAssessment: React.FC = () => {
 
   const handleSubmit = useCallback(() => {
     if (id) {
-      console.log("user responses", responses);
+      // check if at least one question has been answered
+      const isAnswered = responses.some((response) => {
+        const answer = response.answer;
+        return answer instanceof Set ? answer.size > 0 : answer !== "";
+      });
+
+      if (!isAnswered) {
+        alert("Please answer at least one question");
+        return;
+      }
+
+      setOpenResultsPopup(true);
+      setIsSubmitting(true);
 
       const formattedResponses = responses.map((response) => ({
         questionId: response.questionId,
@@ -144,12 +143,14 @@ const TakeAssessment: React.FC = () => {
       })
         .then((data) => {
           setAssessmentResults(data.data);
-          setOpenResultsPopup(true);
         })
         .catch((err) => {
           dispatch(
             setMessageWithTimeout({ message: err.message, isError: true }),
           );
+        })
+        .finally(() => {
+          setIsSubmitting(false);
         });
     }
   }, [id, attemptId, dispatch, responses]);
@@ -171,7 +172,6 @@ const TakeAssessment: React.FC = () => {
   }, [id, navigate, dispatch]);
 
   useEffect(() => {
-    // Check if the user navigated directly to the URL
     if (location.state?.assessmentId) {
       createOrFetchAttempt().catch((err) => {
         dispatch(
@@ -198,36 +198,28 @@ const TakeAssessment: React.FC = () => {
     }
   };
 
-  // useEffect(() => {
-  //     timerRef.current = window.setInterval(() => {
-  //         setTimeLeft((prevTimeLeft) => {
-  //             if (prevTimeLeft <= 1) {
-  //                 clearInterval(timerRef.current as never);
-  //                 handleSubmit();
-  //                 return 0;
-  //             }
-  //             return prevTimeLeft - 1;
-  //         });
-  //     }, 1000);
-  //
-  //     return () => {
-  //         if (timerRef.current !== null) {
-  //             clearInterval(timerRef.current);
-  //         }
-  //     };
-  // }, [handleSubmit]);
-
   const fetchData = useCallback(async () => {
     if (id && attemptId) {
       setLoading(true);
       try {
         Promise.all([
-          AssessmentService.getAssessmentById(+id),
+          AssessmentService.getAssessmentById(id),
           AssessmentService.getQuestionsByAssessmentId(+id),
         ]).then((res) => {
           const [assessment, questions] = res;
           const { data: assessmentData } = assessment;
           const { data: questionsData } = questions;
+
+          const formattedQuestions = questionsData.map((question) => {
+            return {
+              id: question.id,
+              content: parse(question.attributes.content),
+              type: question.attributes.type,
+              options: question.attributes.options,
+              passageId: String(question.attributes.passage?.id),
+            };
+          });
+
           setAssessment({
             id: assessmentData.id,
             name: assessmentData.attributes.name,
@@ -239,31 +231,13 @@ const TakeAssessment: React.FC = () => {
             passMarks: assessmentData.attributes.passMarks,
             maxAttempts: assessmentData.attributes.maxAttempts,
             isPublished: assessmentData.attributes.isPublished,
+            subject: assessmentData.attributes.subject,
           });
 
-          const questionList = questionsData.map((question) => {
-            const { attributes } = question;
-            const { options } = attributes;
-            return {
-              id: question.id,
-              text: parse(attributes.content),
-              type: QuestionType[attributes.type],
-              options: options?.map((option) => {
-                const { attributes } = option;
-                if (!attributes) return;
+          // @ts-ignore
+          setQuestions(formattedQuestions);
 
-                return {
-                  id: option.id,
-                  text: attributes.answer
-                    ? parse(attributes.answer as string)
-                    : "",
-                };
-              }),
-              passageId: String(attributes.passage?.id),
-            };
-          });
-
-          setQuestions(questionList);
+          setTimeLeft(assessmentData.attributes.duration * 60);
         });
       } finally {
         setLoading(false);
@@ -276,6 +250,27 @@ const TakeAssessment: React.FC = () => {
       dispatch(setMessageWithTimeout({ message: err.message, isError: true }));
     });
   }, [dispatch, fetchData]);
+
+  useEffect(() => {
+    timerRef.current = window.setInterval(() => {
+      if (timeLeft === null) return;
+      setTimeLeft((prevTimeLeft) => {
+        if (prevTimeLeft === null) return null;
+        if (prevTimeLeft <= 1) {
+          clearInterval(timerRef.current as never);
+          handleSubmit();
+          return 0;
+        }
+        return prevTimeLeft - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (timerRef.current !== null) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [handleSubmit, timeLeft]);
 
   if (message) {
     return (
@@ -304,7 +299,7 @@ const TakeAssessment: React.FC = () => {
 
   const isQuestionAnswered = (questionId: number) => {
     const response = responses.find(
-      (response) => response.questionId === questionId,
+      (response) => response.questionId == questionId,
     );
     if (!response) return false;
     const answer = response.answer;
@@ -312,9 +307,10 @@ const TakeAssessment: React.FC = () => {
   };
 
   const formatTime = () => {
+    if (timeLeft === null) return "";
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+    return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
   };
 
   const handleOptionSelect = (
@@ -322,7 +318,7 @@ const TakeAssessment: React.FC = () => {
     optionId: number,
     value: string | boolean,
   ) => {
-    const questionIndex = questions.findIndex((q) => q.id === questionId);
+    const questionIndex = questions.findIndex((q) => q.id == questionId);
     if (questionIndex === -1) {
       console.error(`Question with ID ${questionId} not found`);
       return;
@@ -332,14 +328,14 @@ const TakeAssessment: React.FC = () => {
 
     let newAnswer: string | Set<number> = "";
 
-    switch (question.type) {
+    switch (QuestionType[question.type]) {
       case QuestionType.MultipleChoice:
       case QuestionType.TrueFalse:
         newAnswer = String(optionId);
         break;
       case QuestionType.MultipleAnswer:
         newAnswer = handleMultipleAnswerSelect(
-          responses.find((r) => r.questionId === questionId)?.answer ||
+          responses.find((r) => r.questionId == questionId)?.answer ||
             new Set<number>(),
           optionId,
           value as string,
@@ -376,8 +372,9 @@ const TakeAssessment: React.FC = () => {
     newAnswer: string | Set<number>,
   ) => {
     const existingResponseIndex = responses.findIndex(
-      (response) => response.questionId === questionId,
+      (response) => response.questionId == questionId,
     );
+
     const newResponse: UserAnswer = { questionId, answer: newAnswer };
 
     let newResponses = [...responses];
@@ -386,6 +383,7 @@ const TakeAssessment: React.FC = () => {
     } else {
       newResponses = [...newResponses, newResponse];
     }
+
     setResponses(newResponses);
   };
 
@@ -394,7 +392,10 @@ const TakeAssessment: React.FC = () => {
       if (direction === "next") {
         // If the current question has not been answered yet and the question type is MultipleAnswer, set the answer to an empty Set
         if (!isQuestionAnswered(questions[prevIndex].id)) {
-          if (questions[prevIndex].type === QuestionType.MultipleAnswer) {
+          if (
+            QuestionType[questions[prevIndex].type] ===
+            QuestionType.MultipleAnswer
+          ) {
             setResponses([
               ...responses.slice(0, prevIndex),
               {
@@ -419,7 +420,6 @@ const TakeAssessment: React.FC = () => {
 
   const currentQuestion = questions[currentQuestionIndex];
 
-  console.log("attemptId", attemptId);
   return (
     <PageContainer
       title={assessment?.name || "Take Assessment"}
@@ -452,8 +452,9 @@ const TakeAssessment: React.FC = () => {
                 <QuestionDisplay
                   question={currentQuestion}
                   selectedOption={
-                    responses.find((r) => r.questionId === currentQuestion.id)
-                      ?.answer || getDefaultValue(currentQuestion?.type)
+                    responses.find((r) => r.questionId == currentQuestion.id)
+                      ?.answer ||
+                    getDefaultValue(QuestionType[currentQuestion.type])
                   }
                   onSelectOption={handleOptionSelect}
                 />
@@ -516,10 +517,11 @@ const TakeAssessment: React.FC = () => {
         message="Are you sure you want to start the assessment?"
       />
       <AssessmentResult
+        isSubmitting={isSubmitting}
         open={openResultsPopup}
         results={assessmentResults}
         onClose={() => navigate("/dashboard")}
-        onViewDetails={() => navigate("/assessments/" + id + "/results")}
+        onViewDetails={() => navigate("/tests/" + id + "/results/" + attemptId)}
       />
     </PageContainer>
   );

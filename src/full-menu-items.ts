@@ -49,7 +49,7 @@ export interface MenuItem {
   external?: boolean;
 }
 
-const menuItems: MenuItem[] = [
+const fullMenuItems: MenuItem[] = [
   {
     id: "dashboard",
     title: "Dashboard",
@@ -57,8 +57,8 @@ const menuItems: MenuItem[] = [
     icon: icons["NavigationOutlinedIcon"],
     children: [
       {
-        id: "default",
-        title: "Dashboard",
+        id: "dashboard",
+        title: "My Tests",
         type: "item",
         icon: icons["HomeOutlinedIcon"],
         url: "/dashboard",
@@ -85,19 +85,12 @@ const menuItems: MenuItem[] = [
             url: "/tests/create",
           },
           {
-            id: "test-list",
-            title: "Test List",
+            id: "test-management",
+            title: "Test Management",
             type: "item",
-            url: "/tests",
+            url: "/tests/management",
           },
         ],
-      },
-      {
-        id: "test-result",
-        title: "Test Result",
-        type: "item",
-        icon: icons["AppsOutlinedIcon"],
-        url: "/tests/results",
       },
       {
         id: "question",
@@ -119,23 +112,30 @@ const menuItems: MenuItem[] = [
           },
         ],
       },
+      {
+        id: "test-result",
+        title: "Test Result",
+        type: "item",
+        icon: icons["AppsOutlinedIcon"],
+        url: "/tests/results",
+      },
     ],
   },
   {
-    id: "Management",
+    id: "management",
     title: "Management",
     type: "group",
     icon: icons["NavigationOutlinedIcon"],
     children: [
       {
-        id: "user",
+        id: "user-management",
         title: "User Management",
         type: "item",
         url: "/users",
         icon: icons["UserManagementIcon"],
       },
       {
-        id: "group",
+        id: "group-management",
         title: "Group Management",
         type: "item",
         url: "/groups",
@@ -145,4 +145,4 @@ const menuItems: MenuItem[] = [
   },
 ];
 
-export default menuItems;
+export default fullMenuItems;

@@ -6,8 +6,8 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Field, Form, Formik, FormikProps } from "formik";
 import * as Yup from "yup";
-import BlankCard from "@/components/Card/BlankCard";
-import ParentCard from "@/components/Card/ParentCard";
+import BlankCard from "@components/Card/BlankCard.tsx";
+import ParentCard from "@components/Card/ParentCard.tsx";
 import { PublishAssessmentFormValues } from "@/pages/assessments/CreateOrUpdateAssessment.tsx";
 
 const PublishTestSchema = Yup.object().shape({

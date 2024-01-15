@@ -3,360 +3,53 @@ import { useParams } from "react-router-dom";
 import {
   Box,
   Typography,
-  Button,
-  LinearProgress,
   Card,
   CardContent,
-  Avatar,
-  Tooltip,
-  IconButton,
   CircularProgress,
+  Grid,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Paper,
 } from "@mui/material";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AssessmentService from "@/api/services/assessmentService";
 import { setMessageWithTimeout } from "@/stores/messageSlice.ts";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/stores/store.ts";
-import { AssessmentResultPayload } from "@/types/apis/assessmentTypes.ts";
+import {
+  AssessmentResultDetailPayload,
+  QuestionResultPayload,
+} from "@/types/apis/assessmentTypes.ts";
 import PageContainer from "@components/Container/PageContainer.tsx";
+import { QuestionType } from "@/constants/question";
+import { useTheme } from "@mui/material/styles";
+import { ParentCard } from "@components/Card";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
+import { CircularProgressBar } from "@/pages/assessments/components";
+import parse from "html-react-parser";
+import { containsHtml } from "@/helpers";
 
-// {
-//   "data": {
-//   "id": 23,
-//       "name": "Assessment 1",
-//       "score": 60,
-//       "totalCorrect": 6,
-//       "totalMarks": 90,
-//       "totalQuestions": 9,
-//       "questions": [
-//     {
-//       "id": 25,
-//       "content": "What is the main topic of the audio?",
-//       "type": "MultipleChoice",
-//       "options": [
-//         {
-//           "id": "62",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "The weather",
-//             "isCorrect": false
-//           }
-//         },
-//         {
-//           "id": "63",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "The news",
-//             "isCorrect": false
-//           }
-//         },
-//         {
-//           "id": "64",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "The traffic",
-//             "isCorrect": true
-//           }
-//         },
-//         {
-//           "id": "65",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "The sports",
-//             "isCorrect": false
-//           }
-//         }
-//       ],
-//       "userAnswer": 65,
-//       "correctAnswer": [
-//         64
-//       ],
-//       "isCorrect": false,
-//       "marks": "10",
-//       "explanation": null
-//     },
-//     {
-//       "id": 31,
-//       "content": "The TOEIC test is used by more than 14,000 companies in 150 countries.",
-//       "type": "TrueFalse",
-//       "options": [
-//         {
-//           "id": "84",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "True",
-//             "isCorrect": true
-//           }
-//         },
-//         {
-//           "id": "85",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "False",
-//             "isCorrect": false
-//           }
-//         }
-//       ],
-//       "userAnswer": 84,
-//       "correctAnswer": [
-//         84
-//       ],
-//       "isCorrect": true,
-//       "marks": "10",
-//       "explanation": "The TOEIC test is used by more than 14,000 companies in 150 countries."
-//     },
-//     {
-//       "id": 23,
-//       "content": "Choose the images that best describe the house.",
-//       "type": "MultipleAnswer",
-//       "options": [
-//         {
-//           "id": "57",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "The weather",
-//             "isCorrect": true
-//           }
-//         },
-//         {
-//           "id": "54",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "The weather",
-//             "isCorrect": false
-//           }
-//         },
-//         {
-//           "id": "55",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "The weather",
-//             "isCorrect": false
-//           }
-//         },
-//         {
-//           "id": "56",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "The weather",
-//             "isCorrect": false
-//           }
-//         }
-//       ],
-//       "userAnswer": [
-//         "54"
-//       ],
-//       "correctAnswer": [
-//         57
-//       ],
-//       "isCorrect": false,
-//       "marks": "10",
-//       "explanation": null
-//     },
-//     {
-//       "id": 17,
-//       "content": "What are the disadvantages of using renewable energy sources?",
-//       "type": "MultipleAnswer",
-//       "options": [
-//         {
-//           "id": "30",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "They are more expensive than fossil fuels.",
-//             "isCorrect": true
-//           }
-//         },
-//         {
-//           "id": "31",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "They are less environmentally friendly than fossil fuels.",
-//             "isCorrect": false
-//           }
-//         },
-//         {
-//           "id": "32",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "They are less efficient than fossil fuels.",
-//             "isCorrect": true
-//           }
-//         },
-//         {
-//           "id": "33",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "They are less reliable than fossil fuels.",
-//             "isCorrect": true
-//           }
-//         }
-//       ],
-//       "userAnswer": [
-//         "30",
-//         "32",
-//         "33"
-//       ],
-//       "correctAnswer": [
-//         30,
-//         32,
-//         33
-//       ],
-//       "isCorrect": true,
-//       "marks": "10",
-//       "explanation": "The disadvantages of using renewable energy sources are that they are more expensive than fossil fuels, less efficient than fossil fuels, and less reliable than fossil fuels."
-//     },
-//     {
-//       "id": 8,
-//       "content": "The rate of growth of the TOEIC test in Japan is ___.",
-//       "type": "FillIn",
-//       "options": [
-//         {
-//           "id": "23",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "rapid",
-//             "isCorrect": true
-//           }
-//         }
-//       ],
-//       "userAnswer": "rapid",
-//       "correctAnswer": [
-//         23
-//       ],
-//       "isCorrect": true,
-//       "marks": "10",
-//       "explanation": "The rate of growth of the TOEIC test in Japan is rapid."
-//     },
-//     {
-//       "id": 20,
-//       "content": "What are the qualities of a good leader?",
-//       "type": "MultipleAnswer",
-//       "options": [
-//         {
-//           "id": "42",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "They are charismatic.",
-//             "isCorrect": true
-//           }
-//         },
-//         {
-//           "id": "43",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "They are intelligent.",
-//             "isCorrect": true
-//           }
-//         },
-//         {
-//           "id": "44",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "They are honest.",
-//             "isCorrect": true
-//           }
-//         },
-//         {
-//           "id": "45",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "They are humble.",
-//             "isCorrect": false
-//           }
-//         }
-//       ],
-//       "userAnswer": [
-//         "43"
-//       ],
-//       "correctAnswer": [
-//         42,
-//         43,
-//         44
-//       ],
-//       "isCorrect": false,
-//       "marks": "10",
-//       "explanation": "The qualities of a good leader are that they are charismatic, intelligent, and honest."
-//     },
-//     {
-//       "id": 15,
-//       "content": "What is the main topic of the passage?",
-//       "type": "Text",
-//       "options": [],
-//       "userAnswer": "huhu",
-//       "correctAnswer": [],
-//       "isCorrect": true,
-//       "marks": "10",
-//       "explanation": null
-//     },
-//     {
-//       "id": 14,
-//       "content": "What is the TOEIC test used for?",
-//       "type": "Text",
-//       "options": [],
-//       "userAnswer": "hihi",
-//       "correctAnswer": [],
-//       "isCorrect": true,
-//       "marks": "10",
-//       "explanation": null
-//     },
-//     {
-//       "id": 32,
-//       "content": "<p>Test image with correct B</p>",
-//       "type": "MultipleChoice",
-//       "options": [
-//         {
-//           "id": "86",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "<p><img src=\"https://s3-hcm-r1.longvan.net/go-test/1704420557.png\" alt=\"Njc3MDUzLjIzNTU0Nzc4NjUxNzA0NDIwNTU2OTg5.png\"></p>"
-//           }
-//         },
-//         {
-//           "id": "87",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "<p><img src=\"https://s3-hcm-r1.longvan.net/go-test/1704421379.png\" alt=\"MjQ4MzEwLjY5MzgzOTM1MTMzMTcwNDQyMTM3ODcwNw=.png\"></p>"
-//           }
-//         },
-//         {
-//           "id": "88",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "<p><img src=\"https://s3-hcm-r1.longvan.net/go-test/1704421379.png\" alt=\"MjQ4MzEwLjY5MzgzOTM1MTMzMTcwNDQyMTM3ODcwNw=.png\"></p>"
-//           }
-//         },
-//         {
-//           "id": "89",
-//           "type": "questionOptions",
-//           "attributes": {
-//             "answer": "<p><img src=\"https://s3-hcm-r1.longvan.net/go-test/1704421379.png\" alt=\"MjQ4MzEwLjY5MzgzOTM1MTMzMTcwNDQyMTM3ODcwNw=.png\"></p>"
-//           }
-//         }
-//       ],
-//       "userAnswer": 87,
-//       "correctAnswer": [
-//         87
-//       ],
-//       "isCorrect": true,
-//       "marks": "10",
-//       "explanation": "explanationexplanationexplanationexplanationexplanationexplanationexplanation"
-//     }
-//   ]
-// },
-//   "message": "Assessment result retrieved successfully."
-// }
 const AssessmentResultPage: React.FC = () => {
-  // assessments/{id}/results/{attemptId}
+  const theme = useTheme();
   const { id, attemptId } = useParams<{ id: string; attemptId: string }>();
   const dispatch = useDispatch<AppDispatch>();
   const [loading, setLoading] = React.useState(true);
   const [assessmentResult, setAssessmentResult] =
-    React.useState<AssessmentResultPayload>();
+    React.useState<AssessmentResultDetailPayload>();
+
   const [expandedQuestion, setExpandedQuestion] = React.useState<number | null>(
     null,
   );
+
+  const getOptionLabel = (index: number) => {
+    return String.fromCharCode(65 + index);
+  };
+
+  const handleExpandClick = (questionId: number) => {
+    setExpandedQuestion((prev) => (prev === questionId ? null : questionId));
+  };
 
   const fetchAssessmentResult = useCallback(async () => {
     if (id && attemptId) {
@@ -383,110 +76,286 @@ const AssessmentResultPage: React.FC = () => {
     return null;
   }
 
-  const handleExpandClick = (index: number) => {
-    setExpandedQuestion(expandedQuestion === index ? null : index);
+  const isOptionSelected = (
+    optionId: string | number,
+    userAnswer: number | number[] | string | null | undefined,
+  ): boolean => {
+    if (Array.isArray(userAnswer)) {
+      return userAnswer.includes(Number(optionId));
+    }
+    return userAnswer === Number(optionId);
   };
 
-  const getAnswerIcon = (isCorrect?: boolean) => {
-    return isCorrect ? (
-      <CheckCircleOutlineIcon color="success" />
-    ) : (
-      <HighlightOffIcon color="error" />
+  const isOptionCorrect = (
+    optionId: string | number,
+    correctAnswer: number | number[] | string | null | undefined,
+  ): boolean => {
+    if (Array.isArray(correctAnswer)) {
+      return correctAnswer.includes(Number(optionId));
+    }
+
+    return correctAnswer === Number(optionId);
+  };
+
+  const renderExplanation = (
+    question: QuestionResultPayload,
+    questionId: number,
+  ) => {
+    const isExpanded = questionId === expandedQuestion;
+    return question.explanation ? (
+      <Accordion
+        expanded={isExpanded}
+        onChange={() => handleExpandClick(questionId)}
+      >
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" component={"span"}>
+            Explanation
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Typography>{question.explanation}</Typography>
+        </AccordionDetails>
+      </Accordion>
+    ) : null;
+  };
+
+  const renderContent = (content: string) => {
+    return (
+      <Box
+        sx={{
+          wordBreak: "break-word",
+          "& img": { maxWidth: "100%", height: "auto" },
+          "& p": { margin: 0 },
+        }}
+      >
+        {containsHtml(content) ? (
+          parse(content)
+        ) : (
+          <Typography component="div" gutterBottom sx={{ mb: 2 }}>
+            {content}
+          </Typography>
+        )}
+      </Box>
+    );
+  };
+
+  const renderOptionLabel = (
+    option: any,
+    question: QuestionResultPayload,
+    index: number,
+  ) => {
+    const isCorrect = isOptionCorrect(option.id, question.correctAnswer);
+    const isSelected = isOptionSelected(option.id, question.userAnswer);
+
+    const optionStyle = {
+      backgroundColor: isSelected
+        ? isCorrect
+          ? theme.palette.success.light
+          : theme.palette.error.light
+        : isCorrect
+          ? theme.palette.success.light
+          : "none",
+      padding: theme.spacing(1),
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
+      borderRadius: theme.shape.borderRadius,
+      display: "flex",
+      alignItems: "center",
+      gap: theme.spacing(1),
+      border: `1px solid ${theme.palette.divider}`,
+      "& img": {
+        maxWidth: "100%",
+        height: "auto",
+      },
+      "& p": {
+        margin: 0,
+      },
+    };
+
+    return (
+      <Box sx={optionStyle}>
+        <Typography variant="body1" component="div">
+          {getOptionLabel(index)}.{" "}
+        </Typography>
+        {containsHtml(option.attributes.answer) ? (
+          parse(option.attributes.answer)
+        ) : (
+          <Typography component="div">{option.attributes.answer}</Typography>
+        )}
+      </Box>
+    );
+  };
+
+  const renderOptions = (question: QuestionResultPayload) => {
+    const hasAnswer =
+      question.userAnswer !== null && question.userAnswer !== "";
+    switch (QuestionType[question.type]) {
+      case QuestionType.TrueFalse:
+      case QuestionType.MultipleChoice:
+      case QuestionType.MultipleAnswer:
+        return (
+          <Grid container spacing={1} direction="column">
+            {question.options?.map((option, idx) => (
+              <Grid item key={option.id}>
+                {renderOptionLabel(option, question, idx)}
+              </Grid>
+            ))}
+          </Grid>
+        );
+      case QuestionType.FillIn:
+        const isCorrect = question.userAnswer === question.correctAnswer;
+        return (
+          <>
+            <Typography variant="body1" component="div" sx={{ mb: 2 }}>
+              Your Answer:
+              <Paper
+                variant="outlined"
+                sx={{
+                  display: "inline",
+                  ml: 1,
+                  py: 0.5,
+                  px: 1,
+                  backgroundColor: isCorrect
+                    ? theme.palette.success.light
+                    : theme.palette.warning.light,
+                }}
+              >
+                {question.userAnswer || "No Answer"}
+              </Paper>
+            </Typography>
+            <Typography variant="body1" component="div" sx={{ mb: 2 }}>
+              Correct Answer:
+              <Paper
+                variant="outlined"
+                sx={{
+                  display: "inline",
+                  p: 1,
+                  ml: 1,
+                  backgroundColor: isCorrect ? theme.palette.success.light : "",
+                }}
+              >
+                {question.correctAnswer || "No Answer"}
+              </Paper>
+            </Typography>
+            {renderExplanation(question, question.id)}
+          </>
+        );
+      case QuestionType.Text:
+        return (
+          <>
+            <Typography variant="body1">
+              Your Answer:
+              <Paper
+                variant="outlined"
+                sx={{
+                  display: "inline",
+                  ml: 1,
+                  p: 1,
+                  backgroundColor: !hasAnswer
+                    ? theme.palette.warning.light
+                    : "",
+                }}
+              >
+                {question.userAnswer || "No Answer"}
+              </Paper>
+            </Typography>
+            {renderExplanation(question, question.id)}
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const renderQuestionCard = (
+    question: QuestionResultPayload,
+    index: number,
+  ) => {
+    const isCorrect = question.isCorrect;
+
+    const cardStyle = {
+      borderColor: isCorrect
+        ? theme.palette.success.main
+        : theme.palette.error.main,
+      my: 3,
+    };
+
+    return (
+      <Card key={index} elevation={2} sx={cardStyle}>
+        <CardContent>
+          <Box display="flex" justifyContent="space-between">
+            <Typography variant="subtitle1">Question {index + 1}</Typography>
+            <Typography variant="subtitle1">
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                gap={0.5}
+              >
+                {isCorrect ? (
+                  <CheckCircleIcon color="success" />
+                ) : (
+                  <CancelIcon color="error" />
+                )}
+                {question.marks}
+              </Box>
+            </Typography>
+          </Box>
+          {renderContent(question.content as string)}
+          {renderOptions(question)}
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const renderOverallScore = () => {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        sx={{ mb: 6 }}
+      >
+        <CircularProgressBar
+          value={assessmentResult.score}
+          total={assessmentResult.totalMarks}
+        />
+      </Box>
     );
   };
 
   return (
-    <PageContainer title="Assessment Results" description="Assessment Results">
-      {loading || !assessmentResult ? (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          height="100vh"
-        >
-          <CircularProgress />
-        </Box>
-      ) : (
-        <Box p={3}>
-          <Typography variant="h4" gutterBottom>
-            Assessment Results
-          </Typography>
-          <Typography variant="h5" gutterBottom>
-            {assessmentResult.name}
-          </Typography>
-
-          <Card elevation={3} sx={{ my: 2 }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Your Score: {assessmentResult.score}
-              </Typography>
-              <LinearProgress
-                variant="determinate"
-                value={
-                  (assessmentResult.score / assessmentResult.totalMarks) *
-                    100 || 0
-                }
-              />
-            </CardContent>
-          </Card>
-
-          {assessmentResult.questions.map((question, index) => (
-            <Card key={index} elevation={2} sx={{ my: 1 }}>
-              <CardContent>
-                <Box display="flex" alignItems="center" mb={1}>
-                  <Avatar
-                    sx={{
-                      bgcolor: question.isCorrect
-                        ? "success.main"
-                        : "error.main",
-                      mr: 1,
-                    }}
-                  >
-                    {getAnswerIcon(question.isCorrect)}
-                  </Avatar>
-                  <Typography variant="subtitle1" sx={{ flexGrow: 1 }}>
-                    Question {index + 1}
-                  </Typography>
-                  <IconButton
-                    onClick={() => handleExpandClick(index)}
-                    aria-expanded={expandedQuestion === index}
-                  >
-                    <ExpandMoreIcon />
-                  </IconButton>
-                </Box>
-                <Typography gutterBottom>{question.content}</Typography>
-                <Tooltip title="Your answer">
-                  <Typography>
-                    Your Answer: {question.userAnswer || "Not Attempted"}
-                  </Typography>
-                </Tooltip>
-                <Tooltip title="Correct answer">
-                  <Typography>
-                    Correct Answer: {question.correctAnswer}
-                  </Typography>
-                </Tooltip>
-                {expandedQuestion === index && question.explanation && (
-                  <Box mt={2}>
-                    <Typography variant="subtitle2">Explanation:</Typography>
-                    <Typography variant="body2">
-                      {question.explanation}
-                    </Typography>
-                  </Box>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-
-          <Box my={2} display="flex" justifyContent="space-between">
-            <Button variant="contained" color="primary">
-              Review Questions
-            </Button>
-            <Button variant="contained" color="secondary">
-              Back to Dashboard
-            </Button>
+    <PageContainer
+      title={`${assessmentResult.name}'s Result`}
+      description={"This is an assessment result page"}
+    >
+      <ParentCard title={`${assessmentResult.name}'s Result`}>
+        {loading ? (
+          <Box
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "rgba(255, 255, 255, 0.8)",
+              zIndex: 10,
+            }}
+          >
+            <CircularProgress />
           </Box>
-        </Box>
-      )}
+        ) : (
+          <Box pt={2} px={4}>
+            {renderOverallScore()}
+            {assessmentResult.questions.map((question, index) =>
+              renderQuestionCard(question, index),
+            )}
+          </Box>
+        )}
+      </ParentCard>
     </PageContainer>
   );
 };

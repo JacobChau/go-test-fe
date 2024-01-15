@@ -29,17 +29,17 @@ export interface OptionDetailPayload {
 export interface QuestionDetailPayload {
   content: string;
   type: keyof typeof QuestionType;
-  passage: Resource<PassageAttributes>;
+  passage?: Resource<PassageAttributes>;
   options?: Resource<OptionDetailPayload>[];
   explanation?: Resource<ExplanationAttributes>;
   category: Resource<CategoryAttributes>;
 }
 
 export interface AssessmentQuestionAttributes {
-    content: string;
-    type: keyof typeof QuestionType;
-    marks: number;
-    order: number | null;
+  content: string;
+  type: keyof typeof QuestionType;
+  marks: number;
+  order: number | null;
 }
 
 export interface UpdateQuestionParams {
@@ -68,7 +68,7 @@ export interface OptionParams {
 
 export interface CategoryAttributes {
   name: string;
-  description: string;
+  description?: string;
 }
 
 export type CategoriesPayload = Pick<CategoryAttributes, "name">;

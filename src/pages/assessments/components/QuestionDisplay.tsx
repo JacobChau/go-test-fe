@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  Box,
   Card,
   CardContent,
   Checkbox,
@@ -10,46 +11,52 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { Identity } from "@/types/apis";
 import { QuestionType } from "@/constants/question.ts";
-import { QuestionDisplayData } from "@/pages/assessments/TakeAssessment.tsx";
+import { QuestionResultPayload } from "@/types/apis/assessmentTypes.ts";
+import parse from "html-react-parser";
+import { containsHtml } from "@/helpers";
 
 interface QuestionDisplayProps {
-  question: QuestionDisplayData & Identity;
-  onSelectOption: (
+  question: QuestionResultPayload;
+  selectedOption?: Set<number> | string;
+  onSelectOption?: (
     questionId: number,
     optionId: number,
     value: string | boolean,
   ) => void;
-  selectedOption?: Set<number> | string;
+  readOnly?: boolean;
 }
 
 const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
   question,
-  onSelectOption,
   selectedOption,
+  onSelectOption,
+  readOnly = false,
 }) => {
+  const handleOptionChange = (optionId: number, value: string | boolean) => {
+    onSelectOption && onSelectOption(question.id, optionId, value);
+  };
+
   const renderOptions = () => {
-    switch (question.type) {
+    switch (QuestionType[question.type]) {
       case QuestionType.TrueFalse:
       case QuestionType.MultipleChoice:
         return (
           <RadioGroup
             value={selectedOption || ""}
             onChange={(event) =>
-              onSelectOption(
-                question.id,
+              handleOptionChange(
                 parseInt(event.target.value),
                 event.target.value,
               )
             }
           >
             {question.options?.map((option) => (
-              <Grid item key={option.id}>
+              <Grid item key={option.id} sx={{ mb: 1 }}>
                 <FormControlLabel
                   value={option.id.toString()}
-                  control={<Radio />}
-                  label={option.text}
+                  control={<Radio disabled={readOnly} />}
+                  label={parse(option.attributes.answer as string)}
                 />
               </Grid>
             ))}
@@ -61,7 +68,7 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
             {question.options?.map((option) => {
               const isChecked =
                 selectedOption instanceof Set
-                  ? selectedOption.has(option.id)
+                  ? selectedOption.has(+option.id)
                   : false;
               return (
                 <Grid item key={option.id}>
@@ -70,15 +77,12 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
                       <Checkbox
                         checked={isChecked}
                         onChange={(event) =>
-                          onSelectOption(
-                            question.id,
-                            option.id,
-                            event.target.checked,
-                          )
+                          handleOptionChange(+option.id, event.target.checked)
                         }
+                        disabled={readOnly}
                       />
                     }
-                    label={option.text}
+                    label={parse(option.attributes.answer as string)}
                   />
                 </Grid>
               );
@@ -92,9 +96,10 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
             fullWidth
             multiline
             value={(selectedOption as string) || ""}
-            onChange={(event) =>
-              onSelectOption(question.id, -1, event.target.value)
-            }
+            onChange={(event) => handleOptionChange(-1, event.target.value)}
+            InputProps={{
+              readOnly: readOnly,
+            }}
           />
         );
       default:
@@ -102,12 +107,30 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
     }
   };
 
+  const renderContent = (content: string) => {
+    return (
+      <Box
+        sx={{
+          wordBreak: "break-word",
+          "& img": { maxWidth: "100%", height: "auto" },
+          "& p": { margin: 0 },
+        }}
+      >
+        {containsHtml(content) ? (
+          parse(content)
+        ) : (
+          <Typography component="div" gutterBottom sx={{ mb: 2 }} variant="h6">
+            {content}
+          </Typography>
+        )}
+      </Box>
+    );
+  };
+
   return (
     <Card variant="outlined" sx={{ mb: 2, minHeight: 400 }}>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
-          {question.text}
-        </Typography>
+        {renderContent(question.content as string)}
         {renderOptions()}
       </CardContent>
     </Card>

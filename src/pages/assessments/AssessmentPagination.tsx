@@ -15,7 +15,7 @@ import { AssessmentAttributes } from "@/types/apis/assessmentTypes.ts";
 import { AssessmentCard } from "./components";
 import AssessmentDetailModal from "@/pages/assessments/components/AssessmentDetailModal.tsx";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/stores/store.ts";
+import { AppDispatch, RootState } from "@/stores/store.ts";
 import { clearMessage } from "@/stores/messageSlice.ts";
 import PageContainer from "@components/Container/PageContainer.tsx";
 import ParentCard from "@components/Card/ParentCard.tsx";
@@ -38,14 +38,15 @@ const AssessmentPagination = () => {
     AssessmentService.getAssessments,
     initialPagination,
   );
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<
-    number | null
+    string | null
   >(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const { message, isError } = useSelector((state: RootState) => state.message);
 
-  const handleSelectAssessment = (assessmentId: number) => {
+  const handleSelectAssessment = (assessmentId: string) => {
     setSelectedAssessmentId(assessmentId);
     setIsDetailModalOpen(true);
   };
@@ -55,7 +56,7 @@ const AssessmentPagination = () => {
     setSelectedAssessmentId(null);
   };
 
-  const handleTakeAssessment = (assessmentId: number) => {
+  const handleTakeAssessment = (assessmentId: string) => {
     navigate(`/tests/${assessmentId}/take`, { state: { assessmentId } });
   };
 
@@ -63,7 +64,6 @@ const AssessmentPagination = () => {
     event: React.ChangeEvent<unknown>,
     page: number,
   ) => {
-    // Adjust page index for your API (subtract 1 for 0-based indexing)
     handlePageChange(event, page - 1);
   };
 
@@ -78,7 +78,7 @@ const AssessmentPagination = () => {
             <Grid container spacing={1}>
               {Array.from(new Array(initialPagination.perPage)).map(
                 (_, index) => (
-                  <Grid item key={index} xs={12} sm={6} md={4}>
+                  <Grid item key={index} xs={6} sm={4} md={3}>
                     <Skeleton variant="rectangular" height={118} />
                     <Skeleton variant="text" />
                     <Skeleton variant="text" />
@@ -93,7 +93,7 @@ const AssessmentPagination = () => {
           ) : assessments.length > 0 ? (
             <Grid container spacing={1}>
               {assessments.map((assessment) => (
-                <Grid item key={assessment.id} xs={12} sm={6} md={4}>
+                <Grid item key={assessment.id} xs={6} sm={4} md={3}>
                   <AssessmentCard
                     assessment={assessment}
                     onSelect={handleSelectAssessment}
@@ -131,6 +131,7 @@ const AssessmentPagination = () => {
 
           {isDetailModalOpen && selectedAssessmentId && (
             <AssessmentDetailModal
+              onPopupClose={() => setIsDetailModalOpen(false)}
               assessmentId={selectedAssessmentId}
               open={isDetailModalOpen}
               onClose={handleDetailModalClose}

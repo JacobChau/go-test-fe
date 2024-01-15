@@ -22,16 +22,13 @@ interface UseFetchDataReturn<ItemType> {
   pagination: PaginationState;
   searchCriteria: SearchCriteria;
   searchTerm: string;
-  handlePageChange: (
-    event: React.ChangeEvent<unknown>,
-    newPage: number,
-  ) => void;
+  handlePageChange: (event: any, newPage: number) => void;
   handleRowsPerPageChange: (event: { target: { value: string } }) => void;
   handleSearchChange: (criteria: SearchCriteria) => void;
   handleSearchTermChange: (term: string) => void;
-  handleFilterChange: (newFilters: never) => void;
+  handleFilterChange: (newFilters: any) => void;
   fetchData: () => void;
-  filters: never;
+  filters: any;
 }
 
 function useFetchData<ItemType>(
@@ -75,7 +72,6 @@ function useFetchData<ItemType>(
         setPagination((prev) => ({ ...prev, total: meta.total }));
       }
     } catch (error) {
-      console.error("Failed to fetch data:", error);
       setError("Failed to fetch data");
     } finally {
       setLoading(false);
@@ -103,7 +99,7 @@ function useFetchData<ItemType>(
   }, [pagination.page, pagination.perPage, searchCriteria, filters]);
 
   const handlePageChange = useCallback(
-    (_event: React.ChangeEvent<unknown>, newPage: number) => {
+    (_event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
       setPagination({
         ...pagination,
         page: newPage,
@@ -131,7 +127,7 @@ function useFetchData<ItemType>(
     setDebouncedSearchTerm(term);
     setPagination({ ...initialPagination, page: 0 });
   };
-  const handleFilterChange = (newFilters: SetStateAction<{}>) => {
+  const handleFilterChange = (newFilters: SetStateAction<any>) => {
     setFilters(newFilters);
     setPagination({ ...initialPagination, page: 0 });
   };

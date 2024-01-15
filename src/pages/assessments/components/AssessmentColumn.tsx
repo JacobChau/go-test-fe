@@ -1,6 +1,7 @@
 import { TableColumn } from "@components/PaginationTable/GenericTable.tsx";
 import { Avatar, Stack, Typography } from "@mui/material";
 import dayjs from "dayjs";
+import { AssessmentAttributes } from "@/types/apis/assessmentTypes.ts";
 
 const AssessmentColumn: TableColumn[] = [
   {
@@ -65,6 +66,9 @@ const AssessmentColumn: TableColumn[] = [
     canEdit: false,
     canSearch: false,
     sx: { width: "10%", minWidth: 75, textAlign: "center" },
+    render: (row: AssessmentAttributes) => (
+      <Typography variant="body2">{row.subject.attributes.name}</Typography>
+    ),
   },
   {
     label: "Duration",

@@ -17,7 +17,7 @@ const TestSearchColumn: SearchColumn[] = [
   { key: "description", label: "Description" },
 ];
 
-const AssessmentList = () => {
+const AssessmentManagement = () => {
   const {
     items: tests,
     fetchData: fetchTests,
@@ -33,7 +33,7 @@ const AssessmentList = () => {
     handleSearchChange,
     searchCriteria,
   } = useFetchData<AssessmentAttributes>(
-    AssessmentService.getAssessments,
+    AssessmentService.getAssessmentManagement,
     initialPagination,
     TestSearchColumn[0],
   );
@@ -86,4 +86,4 @@ const AssessmentList = () => {
   );
 };
 
-export default AssessmentList;
+export default AssessmentManagement;

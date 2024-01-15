@@ -8,6 +8,7 @@ import {
 import {
   AssessmentAttributes,
   AssessmentDetailPayload,
+  AssessmentResultDetailPayload,
   AssessmentResultPayload,
   CreateAssessmentAttemptParams,
   CreateAssessmentAttemptPayload,
@@ -35,8 +36,11 @@ const updateAssessment = async (id: string, data: CreateAssessmentParams) => {
 
 const getAssessmentById = async (
   id: string,
+  query?: QueryParams,
 ): Promise<ApiResponse<Resource<AssessmentDetailPayload>>> => {
-  const response = await client.get(`${ASSESSMENT_API_URL}/${id}`);
+  const response = await client.get(`${ASSESSMENT_API_URL}/${id}`, {
+    params: query,
+  });
   return response.data;
 };
 
@@ -71,7 +75,7 @@ const submitAssessmentAttempt = async (
 const getAssessmentResult = async (
   assessmentId: string,
   attemptId: string,
-): Promise<ApiResponse<AssessmentResultPayload>> => {
+): Promise<ApiResponse<AssessmentResultDetailPayload>> => {
   const response = await client.get(
     `${ASSESSMENT_API_URL}/${assessmentId}/results/${attemptId}`,
   );
@@ -80,6 +84,24 @@ const getAssessmentResult = async (
 
 const deleteAssessment = async (id: string) => {
   return await client.delete(`${ASSESSMENT_API_URL}/${id}`);
+};
+
+const getAssessmentResults = async (
+  data?: QueryParams,
+): Promise<ApiResponse<Resource<AssessmentResultPayload>[]>> => {
+  const response = await client.get(`${ASSESSMENT_API_URL}/results`, {
+    params: data,
+  });
+  return response.data;
+};
+
+const getAssessmentManagement = async (
+  data?: QueryParams,
+): Promise<ApiResponse<Resource<AssessmentAttributes>[]>> => {
+  const response = await client.get(`${ASSESSMENT_API_URL}/management`, {
+    params: data,
+  });
+  return response.data;
 };
 
 const AssessmentService = {
@@ -92,6 +114,8 @@ const AssessmentService = {
   createAssessment,
   updateAssessment,
   deleteAssessment,
+  getAssessmentResults,
+  getAssessmentManagement,
 };
 
 export default AssessmentService;

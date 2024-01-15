@@ -23,9 +23,10 @@ import InfoIcon from "@mui/icons-material/Info";
 import { Resource, SubjectAttributes } from "@/types/apis";
 import { CreateAssessmentFormValues } from "@/pages/assessments/CreateOrUpdateAssessment.tsx";
 import ParentCard from "@components/Card/ParentCard.tsx";
-import BlankCard from "@/components/Card/BlankCard";
+import BlankCard from "@components/Card/BlankCard.tsx";
 
-export interface CreateTestFormProps {
+export interface EditTestFormProps {
+  editMode: boolean;
   values: CreateAssessmentFormValues;
   onSubmit: (values: any) => void;
   formikRef: React.RefObject<FormikProps<any>>;
@@ -41,7 +42,8 @@ const validationSchema = Yup.object().shape({
     .required("Total Marks is required"),
   passMarks: Yup.number()
     .min(0, "Pass Marks must be 0 or a positive number")
-    .max(Yup.ref("totalMarks"), "Pass Marks must be less than Total Marks")
+    // less than or equal to total marks
+    .max(Yup.ref("totalMarks"), "Pass Marks cannot be more than Total Marks")
     .nullable(),
   maxAttempts: Yup.number()
     .positive("Max Attempts must be a positive number")
@@ -55,7 +57,8 @@ const validationSchema = Yup.object().shape({
   thumbnail: Yup.mixed().nullable(),
 });
 
-const CreateTestForm: React.FC<CreateTestFormProps> = ({
+const EditTestForm: React.FC<EditTestFormProps> = ({
+  editMode,
   subjects,
   values,
   onSubmit,
@@ -96,7 +99,7 @@ const CreateTestForm: React.FC<CreateTestFormProps> = ({
   };
 
   return (
-    <ParentCard title="Create Test">
+    <ParentCard title={editMode ? "Edit Test" : "Create Test"}>
       <BlankCard>
         <Formik
           innerRef={formikRef}
@@ -276,4 +279,4 @@ const CreateTestForm: React.FC<CreateTestFormProps> = ({
   );
 };
 
-export default CreateTestForm;
+export default EditTestForm;

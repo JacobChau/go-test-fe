@@ -29,8 +29,12 @@ const AssessmentResult = Loadable(
 const CreateOrUpdateTest = Loadable(
   lazy(() => import("@/pages/assessments/CreateOrUpdateAssessment.tsx")),
 );
-const TestList = Loadable(
-  lazy(() => import("@/pages/assessments/AssessmentList.tsx")),
+const AssessmentManagement = Loadable(
+  lazy(() => import("@/pages/assessments/AssessmentManagement.tsx")),
+);
+
+const AssessmentResultListPage = Loadable(
+  lazy(() => import("@/pages/assessments/AssessmentResultPagination.tsx")),
 );
 
 const MainRoutes = {
@@ -82,8 +86,12 @@ const MainRoutes = {
       element: <CreateOrUpdateTest />,
     },
     {
-      path: "/tests",
-      element: <TestList />,
+      path: "/tests/management",
+      element: <AssessmentManagement />,
+    },
+    {
+      path: "/tests/results",
+      element: <AssessmentResultListPage />,
     },
     {
       path: "/tests/:id/take",

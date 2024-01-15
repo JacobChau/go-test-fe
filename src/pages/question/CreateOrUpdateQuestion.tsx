@@ -1,8 +1,9 @@
-import { SetStateAction, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   Box,
   Button,
+  Collapse,
   FormControl,
   Grid,
   InputLabel,
@@ -19,6 +20,7 @@ import ParentCard from "@components/Card/ParentCard.tsx";
 import { QuestionType } from "@/constants/question.ts";
 import {
   CategoryAttributes,
+  CreateCategoryParams,
   CreateQuestionParams,
   ExplanationAttributes,
   IdentityOptional,
@@ -36,11 +38,16 @@ import {
   QuestionExplanation,
   QuestionOptions,
 } from "@/pages/question/components";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ConfirmationDialog from "@components/Dialog/ConfirmationDialog.tsx";
+import { CreateCategoryForm } from "@/pages/question/components/categories";
+import { AddPassageDialog } from "@/pages/question/components/passages";
+import RemoveIcon from "@mui/icons-material/Remove";
+import AddIcon from "@mui/icons-material/Add";
+import { containsHtml } from "@/helpers";
 
 export interface Option {
-  id: number;
+  id: string | number;
   text?: string;
   label?: string;
   isCorrect?: boolean;
@@ -66,15 +73,17 @@ const initialQuestionData: QuestionData = {
   })),
   type: QuestionType.MultipleChoice,
   categoryId: "",
+  explanation: undefined,
+  passageId: undefined,
   hasQuillEditor: true,
 };
 
 const CreateOrUpdateQuestion = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
   const { message, isError } = useSelector((state: RootState) => state.message);
-  const [passage, setPassage] = useState("");
   const [questionData, setQuestionData] = useState(initialQuestionData);
   const [passages, setPassages] = useState<Resource<PassagesPayload>[]>([]);
   const [categories, setCategories] = useState<Resource<CategoryAttributes>[]>(
@@ -83,17 +92,83 @@ const CreateOrUpdateQuestion = () => {
   const [loading, setLoading] = useState(true);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [isCategoryFormOpen, setIsCategoryFormOpen] = useState<boolean>(false);
+
+  const [isPassageFormOpen, setIsPassageFormOpen] = useState<boolean>(false);
+  const [showPassageSection, setShowPassageSection] = useState(true);
 
   const isEditMode = id !== undefined;
+
+  const handleAddCategory = useCallback(() => {
+    setIsCategoryFormOpen(true);
+  }, []);
+
+  const handleCreateCategory = useCallback(
+    async (data: CreateCategoryParams) => {
+      try {
+        setIsSubmitted(true);
+        await questionService.createCategory(data);
+        dispatch(
+          setMessageWithTimeout({
+            message: "Category created successfully",
+            isError: false,
+          }),
+        );
+        setIsCategoryFormOpen(false);
+      } catch (err: any) {
+        dispatch(
+          setMessageWithTimeout({ message: err.message, isError: true }),
+        );
+      } finally {
+        setIsSubmitted(false);
+      }
+    },
+    [dispatch, setIsCategoryFormOpen],
+  );
+
+  const handleAddPassage = useCallback(() => {
+    setIsPassageFormOpen(true);
+  }, []);
+
+  const handlePassagesUpdated = useCallback(async () => {
+    const { data } = await passageService.getPassages({
+      perPage: 100,
+    });
+    setPassages(data);
+  }, []);
+
+  const closeCategoryForm = () => setIsCategoryFormOpen(false);
+  const closePassageForm = () => setIsPassageFormOpen(false);
+
+  const handleQuestionDataChange = useCallback(
+    (value: Partial<QuestionData>) => {
+      console.log("Question data change:", value);
+      setQuestionData((prevState) => ({ ...prevState, ...value }));
+    },
+    [],
+  );
+
+  const handleCategoryChange = useCallback(
+    (event: { target: { value: string } }) => {
+      if (event.target.value === "add-category") {
+        handleAddCategory();
+      } else {
+        handleQuestionDataChange({
+          categoryId: event.target.value,
+        });
+      }
+    },
+    [handleQuestionDataChange, handleAddCategory],
+  );
 
   const handleSaveConfirmation = () => {
     setConfirmOpen(true);
   };
 
-    const handleConfirmSave = async () => {
-        setConfirmOpen(false);
-        await handleSubmit();
-    };
+  const handleConfirmSave = async () => {
+    setConfirmOpen(false);
+    await handleSubmit();
+  };
 
   const handleCloseConfirm = () => {
     setConfirmOpen(false);
@@ -102,7 +177,9 @@ const CreateOrUpdateQuestion = () => {
   const fetchData = useCallback(async () => {
     const [categoriesData, passageData] = await Promise.all([
       questionService.getCategories(),
-      passageService.getPassages(),
+      passageService.getPassages({
+        perPage: 100,
+      }),
     ]);
 
     setCategories(categoriesData.data);
@@ -110,8 +187,7 @@ const CreateOrUpdateQuestion = () => {
   }, []);
 
   const resetState = useCallback(() => {
-    setQuestionData(initialQuestionData);
-    setPassage("");
+    handleQuestionDataChange(initialQuestionData);
   }, []);
 
   useEffect(() => {
@@ -119,6 +195,7 @@ const CreateOrUpdateQuestion = () => {
     if (isEditMode) {
       const fetchQuestionData = async () => {
         const { data } = await questionService.getQuestionById(id);
+        setShowPassageSection(!!data.attributes.passage);
         setQuestionData({
           text: data.attributes.content,
           options: data.attributes?.options?.map((option, index) => ({
@@ -171,9 +248,8 @@ const CreateOrUpdateQuestion = () => {
     (event: { target: { value: any } }) => {
       const type = event.target.value;
 
-      // Reset questionData based on the type
       const newState = {
-        ...initialQuestionData, // Reset to initial state
+        ...initialQuestionData,
         type,
         hasQuillEditor:
           type !== QuestionType.TrueFalse && type !== QuestionType.FillIn,
@@ -222,23 +298,27 @@ const CreateOrUpdateQuestion = () => {
           break;
       }
 
-      setQuestionData(newState);
+      handleQuestionDataChange(newState);
     },
     [],
   );
+
+  console.log("Question data:", questionData);
 
   const handlePassageChange = useCallback(
     (event: { target: { value: string } }) => {
-      setPassage(event.target.value);
+      const passageId = event.target.value;
+      if (passageId) {
+        handleQuestionDataChange({
+          passageId: passageId,
+        });
+      } else {
+        handleQuestionDataChange({
+          passageId: undefined,
+        });
+      }
     },
-    [],
-  );
-
-  const handleQuestionDataChange = useCallback(
-    (value: SetStateAction<QuestionData>) => {
-      setQuestionData((prevState) => ({ ...prevState, ...value }));
-    },
-    [],
+    [passages, questionData],
   );
 
   const validateQuestionData = () => {
@@ -380,6 +460,7 @@ const CreateOrUpdateQuestion = () => {
       setIsSubmitted(true);
 
       if (isEditMode) {
+        console.log("Question data:", questionData);
         const questionPayload: UpdateQuestionParams = {
           content: questionData.text,
           type: getKeyByValue(QuestionType, questionData.type),
@@ -410,6 +491,7 @@ const CreateOrUpdateQuestion = () => {
           };
         }
 
+        console.log("Question payload:", questionPayload);
         await questionService.updateQuestion(id, questionPayload);
         dispatch(
           setMessageWithTimeout({
@@ -499,7 +581,7 @@ const CreateOrUpdateQuestion = () => {
                 <Typography variant="h6" gutterBottom sx={{ mt: -1 }}>
                   Question Entry Options
                 </Typography>
-                <FormControl fullWidth margin="normal">
+                <FormControl fullWidth margin="normal" sx={{ mt: 3 }}>
                   <InputLabel
                     id="category-label"
                     sx={{
@@ -516,49 +598,28 @@ const CreateOrUpdateQuestion = () => {
                     labelId="category-label"
                     id="category"
                     value={questionData.categoryId}
-                    onChange={(event) => {
-                      handleQuestionDataChange({
-                        ...questionData,
-                        categoryId: event.target.value,
-                      });
-                    }}
+                    onChange={handleCategoryChange}
                   >
                     {categories.map((category) => (
                       <MenuItem key={category.id} value={category.id}>
                         {category.attributes.name}
                       </MenuItem>
                     ))}
-                    <MenuItem value="add-category">Add Category</MenuItem>
-                  </Select>
-                </FormControl>
-
-                <FormControl fullWidth margin="normal">
-                  <InputLabel
-                    id="passage-label"
-                    sx={{
-                      color: passage === "" ? theme.palette.text.disabled : "",
-                    }}
-                  >
-                    Select Passage
-                  </InputLabel>
-                  <Select
-                    labelId="passage-label"
-                    id="passage"
-                    value={passage}
-                    onChange={handlePassageChange}
-                  >
-                    {passages.map((passage) => (
-                      <MenuItem
-                        key={passage.id}
-                        value={passage.attributes.title}
+                    <MenuItem value="add-category">
+                      <em
+                        style={{
+                          color: theme.palette.primary.main,
+                          fontSize: "0.875rem",
+                          fontWeight: 500,
+                        }}
                       >
-                        {passage.attributes.title}
-                      </MenuItem>
-                    ))}
+                        Add Category
+                      </em>
+                    </MenuItem>
                   </Select>
                 </FormControl>
 
-                <FormControl fullWidth margin="normal">
+                <FormControl fullWidth margin="normal" sx={{ mt: 3 }}>
                   <InputLabel id="question-type-label">
                     Select Question Type
                   </InputLabel>
@@ -575,10 +636,6 @@ const CreateOrUpdateQuestion = () => {
                     ))}
                   </Select>
                 </FormControl>
-
-                <Typography variant="subtitle1" gutterBottom sx={{ mt: 4 }}>
-                  Total Questions: <strong>10</strong>
-                </Typography>
               </Grid>
               <Grid item xs={16} md={12} lg={13}>
                 <Typography variant="subtitle1" gutterBottom sx={{ mt: -1 }}>
@@ -588,7 +645,7 @@ const CreateOrUpdateQuestion = () => {
                   key={questionData.type}
                   value={questionData.text}
                   onChange={(value: string) => {
-                    handleQuestionDataChange({ ...questionData, text: value });
+                    handleQuestionDataChange({ text: value });
                   }}
                   placeholder="Type your question here..."
                 />
@@ -596,6 +653,7 @@ const CreateOrUpdateQuestion = () => {
                 <QuestionOptions
                   questionData={questionData}
                   setQuestionData={handleQuestionDataChange}
+                  quillEditor={containsHtml(questionData.text)}
                 />
 
                 {questionData.type !== QuestionType.Text && (
@@ -604,7 +662,6 @@ const CreateOrUpdateQuestion = () => {
                       explanation={questionData.explanation?.content}
                       setExplanation={(value) => {
                         handleQuestionDataChange({
-                          ...questionData,
                           explanation: {
                             id: questionData.explanation?.id,
                             content: value,
@@ -613,6 +670,96 @@ const CreateOrUpdateQuestion = () => {
                       }}
                     />
                   </Box>
+                )}
+
+                <Box
+                  sx={{
+                    mt: 1,
+                    padding: 1,
+                    backgroundColor: theme.palette.common.white,
+                  }}
+                >
+                  <Button
+                    variant="text"
+                    color="primary"
+                    startIcon={
+                      showPassageSection ? <RemoveIcon /> : <AddIcon />
+                    }
+                    onClick={() => setShowPassageSection(!showPassageSection)}
+                  >
+                    Advanced Options
+                  </Button>
+
+                  <Collapse in={showPassageSection}>
+                    <Box sx={{ mt: 2 }}>
+                      <Grid container alignItems="center" spacing={2}>
+                        <Grid item xs={12} sm={8}>
+                          <FormControl fullWidth>
+                            <InputLabel id="passage-select-label" shrink>
+                              Select Passage
+                            </InputLabel>
+                            <Select
+                              sx={{
+                                backgroundColor: theme.palette.background.paper,
+                              }}
+                              labelId="passage-select-label"
+                              id="passage-select"
+                              value={questionData.passageId || ""}
+                              onChange={handlePassageChange}
+                              displayEmpty
+                              MenuProps={{
+                                PaperProps: {
+                                  style: {
+                                    maxHeight: 200,
+                                    overflow: "auto",
+                                  },
+                                },
+                              }}
+                            >
+                              <MenuItem value="">
+                                <em>None</em>
+                              </MenuItem>
+                              {passages.map((passage) => (
+                                <MenuItem key={passage.id} value={passage.id}>
+                                  {passage.attributes.title}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                        <Grid
+                          item
+                          xs={12}
+                          sm={4}
+                          container
+                          justifyContent="flex-start"
+                          alignItems="center"
+                        >
+                          <Typography variant="body1" sx={{ mr: 1 }}>
+                            OR
+                          </Typography>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleAddPassage}
+                          >
+                            Add New Passage
+                          </Button>
+                        </Grid>
+                      </Grid>
+                    </Box>
+                  </Collapse>
+                </Box>
+
+                {isEditMode && (
+                  <Button
+                    sx={{ mt: 3, mr: 2 }}
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => navigate("/questions")}
+                  >
+                    Back to Question Bank
+                  </Button>
                 )}
 
                 <Button
@@ -675,7 +822,6 @@ const CreateOrUpdateQuestion = () => {
                   position: "absolute",
                   left: "50%",
                   top: "80%",
-                  // transform: 'translateX(-50%) translateY(-50%)',
                 }}
                 onClose={() => dispatch(clearMessage())}
               >
@@ -683,6 +829,23 @@ const CreateOrUpdateQuestion = () => {
               </Alert>
             </Box>
           )}
+
+          <CreateCategoryForm
+            open={isCategoryFormOpen}
+            onClose={closeCategoryForm}
+            onCreate={handleCreateCategory}
+          />
+          <AddPassageDialog
+            passages={passages}
+            open={isPassageFormOpen}
+            onClose={closePassageForm}
+            onPassagesUpdated={handlePassagesUpdated}
+            onSelectedPassage={(passageId: string) => {
+              handleQuestionDataChange({
+                passageId,
+              });
+            }}
+          />
         </>
       </ParentCard>
     </PageContainer>

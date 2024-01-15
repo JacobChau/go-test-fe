@@ -20,10 +20,10 @@ import {
 import {
   AddQuestion,
   AssignTest,
-  CreateTestForm,
+  EditTestForm,
   PublishTest,
   QuestionSetting,
-} from "@/pages/tests/steps";
+} from "@/pages/assessments/steps";
 import { FormikProps } from "formik";
 import dayjs, { Dayjs } from "dayjs";
 import ConfirmationDialog from "@components/Dialog/ConfirmationDialog.tsx";
@@ -32,7 +32,7 @@ import {
   CreateAssessmentParams,
 } from "@/types/apis/assessmentTypes.ts";
 import AssessmentService from "@/api/services/assessmentService.ts";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import SubjectService from "@/api/services/subjectService.ts";
 
 const steps = [
@@ -68,6 +68,7 @@ export interface SnackBarState {
 
 const CreateOrUpdateAssessment = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const isEditMode = !!id;
   const [selectedQuestions, setSelectedQuestions] = useState(
     new Map<number, AssessmentQuestionAttributes & Identity>(),
@@ -128,7 +129,9 @@ const CreateOrUpdateAssessment = () => {
         if (isEditMode) {
           const promises: Promise<any>[] = [
             SubjectService.getSubjects(),
-            AssessmentService.getAssessmentById(id),
+            AssessmentService.getAssessmentById(id, {
+              include: "questions",
+            }),
           ];
 
           const [subjects, assessment] = await Promise.all(promises);
@@ -144,7 +147,9 @@ const CreateOrUpdateAssessment = () => {
           >();
           assessmentData.attributes.questions.forEach(
             (q: AssessmentQuestionAttributes & Identity) => {
-              selectedQuestionsMap.set(q.id, q);
+              if (typeof q.id === "number") {
+                selectedQuestionsMap.set(q.id, q);
+              }
             },
           );
           setSelectedQuestions(selectedQuestionsMap);
@@ -155,7 +160,7 @@ const CreateOrUpdateAssessment = () => {
           );
           setFormData({
             name: assessmentData.attributes.name,
-            subject: assessmentData.attributes.subjectId,
+            subject: assessmentData.attributes.subject.id.toString(),
             description: assessmentData.attributes.description,
             duration: assessmentData.attributes.duration,
             totalMarks: assessmentData.attributes.totalMarks,
@@ -298,9 +303,9 @@ const CreateOrUpdateAssessment = () => {
       });
     }
 
-    // setTimeout(() => {
-    //     window.location.href = '/tests';
-    // }, 1000);
+    setTimeout(() => {
+      navigate("/tests/management");
+    }, 1500);
   };
 
   const handlePublishFormSubmit = (values: PublishAssessmentFormValues) => {
@@ -323,12 +328,12 @@ const CreateOrUpdateAssessment = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  console.log("questions", selectedQuestions);
   const getStepContent = (stepIndex: number) => {
     switch (stepIndex) {
       case 0:
         return (
-          <CreateTestForm
+          <EditTestForm
+            editMode={isEditMode}
             onSubmit={handleFormSubmit}
             formikRef={formikRef}
             values={formData}
@@ -406,7 +411,9 @@ const CreateOrUpdateAssessment = () => {
         open={openDialog}
         onClose={() => setOpenDialog(false)}
         onConfirm={handleFinish}
-        message="Are you sure you want to create this test?"
+        message={`Are you sure you want to ${
+          isEditMode ? "update" : "create"
+        } this test?`}
       />
 
       <Snackbar
