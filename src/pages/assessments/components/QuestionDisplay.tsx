@@ -90,7 +90,6 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
           </Grid>
         );
       case QuestionType.FillIn:
-      case QuestionType.Text:
         return (
           <TextField
             fullWidth
@@ -100,6 +99,18 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
             InputProps={{
               readOnly: readOnly,
             }}
+          />
+        );
+      case QuestionType.Text:
+        return (
+          <TextField
+            fullWidth
+            multiline
+            rows={12} // Set the number of rows for the text area
+            value={selectedOption}
+            onChange={(event) => handleOptionChange(-1, event.target.value)}
+            variant="outlined"
+            placeholder="Type your essay here..."
           />
         );
       default:

@@ -7,18 +7,20 @@ import {
   Pagination,
   PaginationItem,
   Skeleton,
+  TextField,
   Typography,
 } from "@mui/material";
 import { useFetchData } from "@/hooks";
 import AssessmentService from "@/api/services/assessmentService.ts";
 import { AssessmentAttributes } from "@/types/apis/assessmentTypes.ts";
-import { AssessmentCard } from "./components";
+import { AssessmentCard, AssessmentSearchColumn } from "./components";
 import AssessmentDetailModal from "@/pages/assessments/components/AssessmentDetailModal.tsx";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/stores/store.ts";
 import { clearMessage } from "@/stores/messageSlice.ts";
 import PageContainer from "@components/Container/PageContainer.tsx";
 import ParentCard from "@components/Card/ParentCard.tsx";
+import AssessmentFilters from "@/pages/assessments/AssessmentFilters.tsx";
 
 const initialPagination = {
   page: 0,
@@ -33,10 +35,15 @@ const AssessmentPagination = () => {
     loading,
     error,
     pagination,
+    searchTerm,
+    filters,
+    handleSearchTermChange,
+    handleFilterChange,
     handlePageChange,
   } = useFetchData<AssessmentAttributes>(
     AssessmentService.getAssessments,
     initialPagination,
+    AssessmentSearchColumn[0],
   );
   const dispatch = useDispatch<AppDispatch>();
 
@@ -69,11 +76,34 @@ const AssessmentPagination = () => {
 
   return (
     <PageContainer
-      title={"Assessments"}
-      description={"Take assessments to test your knowledge."}
+      title={"Tests"}
+      description={"Take test to assess your knowledge"}
     >
-      <ParentCard title={"Assessments"}>
-        <Box sx={{ position: "relative" }}>
+      <ParentCard title={"Tests"}>
+        <Box
+          sx={{
+            mb: 2,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+            <TextField
+              fullWidth
+              label="Search Assessments"
+              variant="outlined"
+              value={searchTerm}
+              onChange={(e) => handleSearchTermChange(e.target.value)}
+              sx={{ mr: 4 }}
+              InputLabelProps={{
+                sx: !searchTerm
+                  ? { color: "#BDBDBD", transition: "0.3s", opacity: 0.7 }
+                  : {},
+              }}
+            />
+            <AssessmentFilters
+              filters={filters}
+              onChange={handleFilterChange}
+            />
+          </Box>
           {loading ? (
             <Grid container spacing={1}>
               {Array.from(new Array(initialPagination.perPage)).map(

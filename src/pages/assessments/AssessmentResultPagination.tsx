@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Alert,
   Box,
@@ -20,6 +20,7 @@ import { ParentCard } from "@components/Card";
 import AssessmentService from "@/api/services/assessmentService.ts";
 
 const AssessmentResultPagination: React.FC = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const [results, setResults] = useState<Resource<AssessmentResultPayload>[]>(
@@ -36,14 +37,25 @@ const AssessmentResultPagination: React.FC = () => {
   const fetchAssessmentResults = useCallback(async () => {
     setLoading(true);
     try {
-      console.log("page", page);
-      const { data, meta } = await AssessmentService.getAssessmentResults({
-        page,
-        perPage: resultsPerPage,
-      });
-      setResults(data);
-      if (meta) {
-        setTotal(meta.total);
+      if (id) {
+        const { data, meta } =
+          await AssessmentService.getAssessmentResultsByAssessmentId(id, {
+            page,
+            perPage: resultsPerPage,
+          });
+        setResults(data);
+        if (meta) {
+          setTotal(meta.total);
+        }
+      } else {
+        const { data, meta } = await AssessmentService.getAssessmentResults({
+          page,
+          perPage: resultsPerPage,
+        });
+        setResults(data);
+        if (meta) {
+          setTotal(meta.total);
+        }
       }
     } finally {
       setLoading(false);
@@ -64,17 +76,23 @@ const AssessmentResultPagination: React.FC = () => {
   }, [fetchAssessmentResults, dispatch, page]);
 
   const handleSelectAssessment = (assessmentId: string, attemptId: string) => {
-    navigate(`/tests/${assessmentId}/results/${attemptId}`, {
-      state: { assessmentId, attemptId },
-    });
+    if (id) {
+      navigate(`/tests/${id}/results/${attemptId}`, {
+        state: { assessmentId, attemptId, owner: true },
+      });
+      return;
+    }
+
+    navigate(`/tests/${assessmentId}/results/${attemptId}`);
   };
 
+  const title = id
+    ? `Test Results of ${results[0]?.attributes.name}`
+    : "Test Results";
+
   return (
-    <PageContainer
-      title={"Assessments Results"}
-      description={"List of all assessments results"}
-    >
-      <ParentCard title={"Assessments Results"}>
+    <PageContainer title={title} description={"List of all test results"}>
+      <ParentCard title={title}>
         <>
           {message && (
             <Box
@@ -125,6 +143,7 @@ const AssessmentResultPagination: React.FC = () => {
                     <AssessmentResultCard
                       assessmentResult={assessment}
                       onSelect={handleSelectAssessment}
+                      user={assessment.attributes.user?.attributes}
                     />
                   </Grid>
                 ))}

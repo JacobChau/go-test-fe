@@ -47,6 +47,7 @@ export interface ActionTableProps {
   rowIndex: number;
   handleEdit: (rowIndex: number) => void;
   onDeleted?: (_id: string) => void;
+  onUpdated?: (_id: string, newData: any) => void;
 }
 
 export type ActionHandler = (props: ActionTableProps) => React.ReactNode;
@@ -84,11 +85,11 @@ interface GenericTableProps {
 const stickyActionStyle = {
   position: "sticky",
   right: 0,
-  backgroundColor: "#00B4D8",
+  backgroundColor: "#1abcdc",
   zIndex: 5,
   padding: "8px",
   textAlign: "center",
-  minWidth: "100px",
+  minWidth: "120px",
 };
 
 const GenericTable: React.FC<GenericTableProps> = ({
@@ -235,6 +236,7 @@ const GenericTable: React.FC<GenericTableProps> = ({
                     </TableCell>
                   ))}
                   {actions && !readonly && (
+                    // @ts-ignore
                     <TableCell style={stickyActionStyle}>
                       <Typography variant="h6">Action</Typography>
                     </TableCell>
@@ -325,6 +327,7 @@ const GenericTable: React.FC<GenericTableProps> = ({
                       </TableCell>
                     ))}
                     {actions && !readonly && (
+                      // @ts-ignore
                       <TableCell style={stickyActionStyle}>
                         {editingRow === rowIndex ? (
                           // Display Save button in edit mode
@@ -340,6 +343,7 @@ const GenericTable: React.FC<GenericTableProps> = ({
                             rowIndex,
                             handleEdit,
                             onDeleted,
+                            onUpdated,
                           })
                         )}
                       </TableCell>

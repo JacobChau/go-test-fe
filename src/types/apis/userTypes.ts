@@ -1,7 +1,7 @@
 import { UserRole } from "@/constants/rolePermissions.ts";
 
 export interface UserAttributes {
-  id: number;
+  id: string;
   name: string;
   email: string;
   password: string;

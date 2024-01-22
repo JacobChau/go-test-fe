@@ -63,6 +63,13 @@ const fullMenuItems: MenuItem[] = [
         icon: icons["HomeOutlinedIcon"],
         url: "/dashboard",
       },
+      {
+        id: "test-result",
+        title: "Test Results",
+        type: "item",
+        icon: icons["AppsOutlinedIcon"],
+        url: "/tests/results",
+      },
     ],
   },
   {
@@ -111,13 +118,6 @@ const fullMenuItems: MenuItem[] = [
             url: "/questions",
           },
         ],
-      },
-      {
-        id: "test-result",
-        title: "Test Result",
-        type: "item",
-        icon: icons["AppsOutlinedIcon"],
-        url: "/tests/results",
       },
     ],
   },

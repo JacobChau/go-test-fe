@@ -39,7 +39,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
 
   useEffect(() => {
     if (isLoggedIn) {
-      navigate("/", { replace: true });
+      navigate("/dashboard", { replace: true });
     }
   }, [isLoggedIn, navigate]);
 

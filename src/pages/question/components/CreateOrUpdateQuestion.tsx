@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   Box,
@@ -15,14 +15,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { useTheme } from "@mui/material/styles";
 
 import QuillEditor from "@components/Form/QuillEditor/QuillEditor.tsx";
-import PageContainer from "@components/Container/PageContainer.tsx";
-import ParentCard from "@components/Card/ParentCard.tsx";
 import { QuestionType } from "@/constants/question.ts";
 import {
+  AssessmentQuestionAttributes,
   CategoryAttributes,
   CreateCategoryParams,
   CreateQuestionParams,
   ExplanationAttributes,
+  Identity,
   IdentityOptional,
   PassagesPayload,
   Resource,
@@ -38,7 +38,7 @@ import {
   QuestionExplanation,
   QuestionOptions,
 } from "@/pages/question/components";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import ConfirmationDialog from "@components/Dialog/ConfirmationDialog.tsx";
 import { CreateCategoryForm } from "@/pages/question/components/categories";
 import { AddPassageDialog } from "@/pages/question/components/passages";
@@ -78,8 +78,19 @@ const initialQuestionData: QuestionData = {
   hasQuillEditor: true,
 };
 
-const CreateOrUpdateQuestion = () => {
-  const { id } = useParams();
+interface CreateOrUpdateQuestionProps {
+  id?: string;
+  setSelectedQuestions?: React.Dispatch<
+    React.SetStateAction<Map<number, AssessmentQuestionAttributes & Identity>>
+  >;
+  fetchQuestions?: () => void;
+}
+
+const CreateOrUpdateQuestion: React.FC<CreateOrUpdateQuestionProps> = ({
+  id,
+  setSelectedQuestions,
+  fetchQuestions,
+}) => {
   const navigate = useNavigate();
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
@@ -95,7 +106,7 @@ const CreateOrUpdateQuestion = () => {
   const [isCategoryFormOpen, setIsCategoryFormOpen] = useState<boolean>(false);
 
   const [isPassageFormOpen, setIsPassageFormOpen] = useState<boolean>(false);
-  const [showPassageSection, setShowPassageSection] = useState(true);
+  const [showPassageSection, setShowPassageSection] = useState(false);
 
   const isEditMode = id !== undefined;
 
@@ -142,7 +153,6 @@ const CreateOrUpdateQuestion = () => {
 
   const handleQuestionDataChange = useCallback(
     (value: Partial<QuestionData>) => {
-      console.log("Question data change:", value);
       setQuestionData((prevState) => ({ ...prevState, ...value }));
     },
     [],
@@ -242,7 +252,7 @@ const CreateOrUpdateQuestion = () => {
           setLoading(false);
         });
     }
-  }, [dispatch, fetchData, id, isEditMode, resetState]);
+  }, [dispatch, fetchData, id, isEditMode, resetState, isSubmitted]);
 
   const handleQuestionTypeChange = useCallback(
     (event: { target: { value: any } }) => {
@@ -302,8 +312,6 @@ const CreateOrUpdateQuestion = () => {
     },
     [],
   );
-
-  console.log("Question data:", questionData);
 
   const handlePassageChange = useCallback(
     (event: { target: { value: string } }) => {
@@ -460,7 +468,6 @@ const CreateOrUpdateQuestion = () => {
       setIsSubmitted(true);
 
       if (isEditMode) {
-        console.log("Question data:", questionData);
         const questionPayload: UpdateQuestionParams = {
           content: questionData.text,
           type: getKeyByValue(QuestionType, questionData.type),
@@ -491,7 +498,6 @@ const CreateOrUpdateQuestion = () => {
           };
         }
 
-        console.log("Question payload:", questionPayload);
         await questionService.updateQuestion(id, questionPayload);
         dispatch(
           setMessageWithTimeout({
@@ -523,13 +529,30 @@ const CreateOrUpdateQuestion = () => {
           );
         }
 
-        await questionService.createQuestion(questionPayload);
+        const { data } = await questionService.createQuestion(questionPayload);
         dispatch(
           setMessageWithTimeout({
             message: "Question created successfully",
             isError: false,
           }),
         );
+
+        if (setSelectedQuestions) {
+          setSelectedQuestions((prevState) => {
+            return new Map(prevState).set(Number(data.id), {
+              id: Number(data.id),
+              content: data.attributes.content,
+              type: data.attributes.type,
+              marks: 0,
+              order: null,
+            });
+          });
+
+          if (fetchQuestions) {
+            fetchQuestions();
+          }
+        }
+
         resetState();
       }
     } catch (err: any) {
@@ -540,315 +563,302 @@ const CreateOrUpdateQuestion = () => {
   };
 
   return (
-    <PageContainer
-      title={isEditMode ? "Edit Question" : "Create Question"}
-      description={
-        "This is the page to" +
-        (isEditMode ? " edit" : " create") +
-        " a question"
-      }
-    >
-      <ParentCard title={isEditMode ? "Edit Question" : "Create Question"}>
-        <>
-          {loading ? (
-            <Box
-              sx={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "rgba(255, 255, 255, 0.8)",
-                zIndex: 2,
-              }}
-            >
-              <CircularProgress />
-            </Box>
-          ) : (
-            <Grid
-              container
-              spacing={theme.spacing(3)}
-              mt={-2}
-              columnSpacing={{ md: 3 }}
-              columns={16}
-              position="relative"
-              style={{ opacity: message ? 0.7 : 1 }}
-            >
-              <Grid item xs={16} md={4} lg={3} p={3}>
-                <Typography variant="h6" gutterBottom sx={{ mt: -1 }}>
-                  Question Entry Options
-                </Typography>
-                <FormControl fullWidth margin="normal" sx={{ mt: 3 }}>
-                  <InputLabel
-                    id="category-label"
-                    sx={{
-                      color:
-                        questionData.categoryId === ""
-                          ? theme.palette.text.disabled
-                          : "",
+    <>
+      {loading ? (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            zIndex: 2,
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Grid
+          container
+          spacing={theme.spacing(3)}
+          mt={-2}
+          columnSpacing={{ md: 3 }}
+          columns={16}
+          position="relative"
+          style={{ opacity: message ? 0.7 : 1 }}
+        >
+          <Grid item xs={16} md={4} lg={3} p={3}>
+            <Typography variant="h6" gutterBottom sx={{ mt: -1 }}>
+              Question Entry Options
+            </Typography>
+            <FormControl fullWidth margin="normal" sx={{ mt: 3 }}>
+              <InputLabel
+                id="category-label"
+                sx={{
+                  color:
+                    questionData.categoryId === ""
+                      ? theme.palette.text.disabled
+                      : "",
+                }}
+              >
+                Select Category
+              </InputLabel>
+              <Select
+                required
+                labelId="category-label"
+                id="category"
+                value={questionData.categoryId}
+                onChange={handleCategoryChange}
+              >
+                {categories.map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    {category.attributes.name}
+                  </MenuItem>
+                ))}
+                <MenuItem value="add-category">
+                  <em
+                    style={{
+                      color: theme.palette.primary.main,
+                      fontSize: "0.875rem",
+                      fontWeight: 500,
                     }}
                   >
-                    Select Category
-                  </InputLabel>
-                  <Select
-                    required
-                    labelId="category-label"
-                    id="category"
-                    value={questionData.categoryId}
-                    onChange={handleCategoryChange}
-                  >
-                    {categories.map((category) => (
-                      <MenuItem key={category.id} value={category.id}>
-                        {category.attributes.name}
-                      </MenuItem>
-                    ))}
-                    <MenuItem value="add-category">
-                      <em
-                        style={{
-                          color: theme.palette.primary.main,
-                          fontSize: "0.875rem",
-                          fontWeight: 500,
-                        }}
-                      >
-                        Add Category
-                      </em>
-                    </MenuItem>
-                  </Select>
-                </FormControl>
+                    Add Category
+                  </em>
+                </MenuItem>
+              </Select>
+            </FormControl>
 
-                <FormControl fullWidth margin="normal" sx={{ mt: 3 }}>
-                  <InputLabel id="question-type-label">
-                    Select Question Type
-                  </InputLabel>
-                  <Select
-                    labelId="question-type-label"
-                    id="question-type"
-                    value={questionData.type}
-                    onChange={handleQuestionTypeChange}
-                  >
-                    {Object.values(QuestionType).map((type, index) => (
-                      <MenuItem key={index} value={type}>
-                        {type}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={16} md={12} lg={13}>
-                <Typography variant="subtitle1" gutterBottom sx={{ mt: -1 }}>
-                  Type Your Question
-                </Typography>
-                <QuillEditor
-                  key={questionData.type}
-                  value={questionData.text}
-                  onChange={(value: string) => {
-                    handleQuestionDataChange({ text: value });
-                  }}
-                  placeholder="Type your question here..."
-                />
-
-                <QuestionOptions
-                  questionData={questionData}
-                  setQuestionData={handleQuestionDataChange}
-                  quillEditor={containsHtml(questionData.text)}
-                />
-
-                {questionData.type !== QuestionType.Text && (
-                  <Box sx={{ mt: 3 }}>
-                    <QuestionExplanation
-                      explanation={questionData.explanation?.content}
-                      setExplanation={(value) => {
-                        handleQuestionDataChange({
-                          explanation: {
-                            id: questionData.explanation?.id,
-                            content: value,
-                          },
-                        });
-                      }}
-                    />
-                  </Box>
-                )}
-
-                <Box
-                  sx={{
-                    mt: 1,
-                    padding: 1,
-                    backgroundColor: theme.palette.common.white,
-                  }}
-                >
-                  <Button
-                    variant="text"
-                    color="primary"
-                    startIcon={
-                      showPassageSection ? <RemoveIcon /> : <AddIcon />
-                    }
-                    onClick={() => setShowPassageSection(!showPassageSection)}
-                  >
-                    Advanced Options
-                  </Button>
-
-                  <Collapse in={showPassageSection}>
-                    <Box sx={{ mt: 2 }}>
-                      <Grid container alignItems="center" spacing={2}>
-                        <Grid item xs={12} sm={8}>
-                          <FormControl fullWidth>
-                            <InputLabel id="passage-select-label" shrink>
-                              Select Passage
-                            </InputLabel>
-                            <Select
-                              sx={{
-                                backgroundColor: theme.palette.background.paper,
-                              }}
-                              labelId="passage-select-label"
-                              id="passage-select"
-                              value={questionData.passageId || ""}
-                              onChange={handlePassageChange}
-                              displayEmpty
-                              MenuProps={{
-                                PaperProps: {
-                                  style: {
-                                    maxHeight: 200,
-                                    overflow: "auto",
-                                  },
-                                },
-                              }}
-                            >
-                              <MenuItem value="">
-                                <em>None</em>
-                              </MenuItem>
-                              {passages.map((passage) => (
-                                <MenuItem key={passage.id} value={passage.id}>
-                                  {passage.attributes.title}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-                        </Grid>
-                        <Grid
-                          item
-                          xs={12}
-                          sm={4}
-                          container
-                          justifyContent="flex-start"
-                          alignItems="center"
-                        >
-                          <Typography variant="body1" sx={{ mr: 1 }}>
-                            OR
-                          </Typography>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={handleAddPassage}
-                          >
-                            Add New Passage
-                          </Button>
-                        </Grid>
-                      </Grid>
-                    </Box>
-                  </Collapse>
-                </Box>
-
-                {isEditMode && (
-                  <Button
-                    sx={{ mt: 3, mr: 2 }}
-                    variant="contained"
-                    color="secondary"
-                    onClick={() => navigate("/questions")}
-                  >
-                    Back to Question Bank
-                  </Button>
-                )}
-
-                <Button
-                  sx={{ mt: 3 }}
-                  variant="contained"
-                  color="primary"
-                  onClick={handleSaveConfirmation}
-                  disabled={loading}
-                >
-                  Save Question
-                </Button>
-              </Grid>
-            </Grid>
-          )}
-
-          <ConfirmationDialog
-            open={confirmOpen}
-            onClose={handleCloseConfirm}
-            onConfirm={handleConfirmSave}
-            message="Are you sure you want to save these changes?"
-          />
-
-          {isSubmitted && (
-            <Box
-              sx={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "rgba(255, 255, 255, 0.8)",
-                zIndex: 2,
-              }}
-            >
-              <CircularProgress />
-            </Box>
-          )}
-          {message && (
-            <Box
-              sx={{
-                position: "fixed",
-                bottom: "0",
-                left: "0",
-                zIndex: 9999,
-                opacity: 1,
-                width: "100%",
-                height: "100%",
-                "& > * + *": {
-                  mt: 2,
-                },
-              }}
-            >
-              <Alert
-                severity={isError ? "error" : "success"}
-                sx={{
-                  zIndex: 9999,
-                  position: "absolute",
-                  left: "50%",
-                  top: "80%",
-                }}
-                onClose={() => dispatch(clearMessage())}
+            <FormControl fullWidth margin="normal" sx={{ mt: 3 }}>
+              <InputLabel id="question-type-label">
+                Select Question Type
+              </InputLabel>
+              <Select
+                labelId="question-type-label"
+                id="question-type"
+                value={questionData.type}
+                onChange={handleQuestionTypeChange}
               >
-                {message}
-              </Alert>
-            </Box>
-          )}
+                {Object.values(QuestionType).map((type, index) => (
+                  <MenuItem key={index} value={type}>
+                    {type}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={16} md={12} lg={13}>
+            <Typography variant="subtitle1" gutterBottom sx={{ mt: -1 }}>
+              Type Your Question
+            </Typography>
+            <QuillEditor
+              key={questionData.type}
+              value={questionData.text}
+              onChange={(value: string) => {
+                handleQuestionDataChange({ text: value });
+              }}
+              placeholder="Type your question here..."
+            />
 
-          <CreateCategoryForm
-            open={isCategoryFormOpen}
-            onClose={closeCategoryForm}
-            onCreate={handleCreateCategory}
-          />
-          <AddPassageDialog
-            passages={passages}
-            open={isPassageFormOpen}
-            onClose={closePassageForm}
-            onPassagesUpdated={handlePassagesUpdated}
-            onSelectedPassage={(passageId: string) => {
-              handleQuestionDataChange({
-                passageId,
-              });
+            <QuestionOptions
+              questionData={questionData}
+              setQuestionData={handleQuestionDataChange}
+              quillEditor={containsHtml(questionData.text)}
+            />
+
+            {questionData.type !== QuestionType.Text && (
+              <Box sx={{ mt: 3 }}>
+                <QuestionExplanation
+                  explanation={questionData.explanation?.content}
+                  setExplanation={(value) => {
+                    handleQuestionDataChange({
+                      explanation: {
+                        id: questionData.explanation?.id,
+                        content: value,
+                      },
+                    });
+                  }}
+                />
+              </Box>
+            )}
+
+            <Box
+              sx={{
+                mt: 1,
+                padding: 1,
+                backgroundColor: theme.palette.common.white,
+              }}
+            >
+              <Button
+                variant="text"
+                color="primary"
+                startIcon={showPassageSection ? <RemoveIcon /> : <AddIcon />}
+                onClick={() => setShowPassageSection(!showPassageSection)}
+              >
+                Advanced Options
+              </Button>
+
+              <Collapse in={showPassageSection}>
+                <Box sx={{ mt: 2 }}>
+                  <Grid container alignItems="center" spacing={2}>
+                    <Grid item xs={12} sm={8}>
+                      <FormControl fullWidth>
+                        <InputLabel id="passage-select-label" shrink>
+                          Select Passage
+                        </InputLabel>
+                        <Select
+                          sx={{
+                            backgroundColor: theme.palette.background.paper,
+                          }}
+                          labelId="passage-select-label"
+                          id="passage-select"
+                          value={questionData.passageId || ""}
+                          onChange={handlePassageChange}
+                          displayEmpty
+                          MenuProps={{
+                            PaperProps: {
+                              style: {
+                                maxHeight: 200,
+                                overflow: "auto",
+                              },
+                            },
+                          }}
+                        >
+                          <MenuItem value="">
+                            <em>None</em>
+                          </MenuItem>
+                          {passages.map((passage) => (
+                            <MenuItem key={passage.id} value={passage.id}>
+                              {passage.attributes.title}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid
+                      item
+                      xs={12}
+                      sm={4}
+                      container
+                      justifyContent="flex-start"
+                      alignItems="center"
+                    >
+                      <Typography variant="body1" sx={{ mr: 1 }}>
+                        OR
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleAddPassage}
+                      >
+                        Add New Passage
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </Box>
+              </Collapse>
+            </Box>
+
+            {isEditMode && (
+              <Button
+                sx={{ mt: 3, mr: 2 }}
+                variant="contained"
+                color="secondary"
+                onClick={() => navigate("/questions")}
+              >
+                Back to Question Bank
+              </Button>
+            )}
+
+            <Button
+              sx={{ mt: 3 }}
+              variant="contained"
+              color="primary"
+              onClick={handleSaveConfirmation}
+              disabled={loading}
+            >
+              Save Question
+            </Button>
+          </Grid>
+        </Grid>
+      )}
+
+      <ConfirmationDialog
+        open={confirmOpen}
+        onClose={handleCloseConfirm}
+        onConfirm={handleConfirmSave}
+        message="Are you sure you want to save these changes?"
+      />
+
+      {isSubmitted && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            zIndex: 2,
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      )}
+      {message && (
+        <Box
+          sx={{
+            position: "fixed",
+            bottom: "0",
+            left: "0",
+            zIndex: 9999,
+            opacity: 1,
+            width: "100%",
+            height: "100%",
+            "& > * + *": {
+              mt: 2,
+            },
+          }}
+        >
+          <Alert
+            severity={isError ? "error" : "success"}
+            sx={{
+              zIndex: 9999,
+              position: "absolute",
+              left: "50%",
+              top: "80%",
             }}
-          />
-        </>
-      </ParentCard>
-    </PageContainer>
+            onClose={() => dispatch(clearMessage())}
+          >
+            {message}
+          </Alert>
+        </Box>
+      )}
+
+      <CreateCategoryForm
+        open={isCategoryFormOpen}
+        onClose={closeCategoryForm}
+        onCreate={handleCreateCategory}
+      />
+      <AddPassageDialog
+        passages={passages}
+        open={isPassageFormOpen}
+        onClose={closePassageForm}
+        onPassagesUpdated={handlePassagesUpdated}
+        onSelectedPassage={(passageId: string) => {
+          handleQuestionDataChange({
+            passageId,
+          });
+        }}
+      />
+    </>
   );
 };
 

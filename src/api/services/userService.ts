@@ -35,12 +35,26 @@ const getCurrentUser = async (): Promise<
   return response.data;
 };
 
+const getUsersNotInGroup = async (
+  data?: QueryParams,
+  groupId?: string,
+): Promise<ApiResponse<Resource<UserAttributes>[]>> => {
+  const response = await client.get(
+    `${API_URL}/groups/${groupId}/not-in-group`,
+    {
+      params: data,
+    },
+  );
+  return response.data;
+};
+
 const UserService = {
   getUsers,
   updateUser,
   deleteUser,
   createUser,
   getCurrentUser,
+  getUsersNotInGroup,
 };
 
 export default UserService;

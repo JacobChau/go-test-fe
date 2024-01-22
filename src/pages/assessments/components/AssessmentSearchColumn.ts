@@ -1,7 +1,8 @@
-import {SearchColumn} from "@components/Search/SearchComponent.tsx";
+import { SearchColumn } from "@components/Search/SearchComponent.tsx";
 
 const AssessmentSearchColumn: SearchColumn[] = [
-    {key: "name", label: "Assessment Name"},
+  { key: "name", label: "Name" },
+  { key: "description", label: "Description" },
 ];
 
 export default AssessmentSearchColumn;

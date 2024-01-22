@@ -18,7 +18,7 @@ export const GroupColumns: TableColumn[] = [
     type: "text",
     canEdit: true,
     canSearch: true,
-    sx: { width: "10%", minWidth: 120 },
+    sx: { width: "15%", minWidth: 180 },
   },
   {
     label: "Description",
@@ -49,7 +49,7 @@ export const GroupColumns: TableColumn[] = [
     type: "user",
     canEdit: true,
     canSearch: false,
-    sx: { width: "15%", minWidth: 120 },
+    sx: { width: "15%", minWidth: 150 },
     render: (row: GroupAttributes) => {
       if (row.createdBy) {
         return (

@@ -7,14 +7,12 @@ import {
   CircularProgress,
   Grid,
   Paper,
+  Snackbar,
   Typography,
 } from "@mui/material";
 import parse from "html-react-parser";
 
-import {
-  AssessmentResult,
-  QuestionDisplay,
-} from "@/pages/assessments/components";
+import { QuestionDisplay } from "@/pages/assessments/components";
 import { Identity } from "@/types/apis";
 import { QuestionType } from "@/constants/question";
 import { styled } from "@mui/material/styles";
@@ -22,7 +20,6 @@ import PageContainer from "@components/Container/PageContainer.tsx";
 import {
   AssessmentDetailPayload,
   QuestionResultPayload,
-  SubmitAssessmentAttemptPayload,
 } from "@/types/apis/assessmentTypes.ts";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import AssessmentService from "@/api/services/assessmentService.ts";
@@ -98,15 +95,12 @@ const TakeAssessment: React.FC = () => {
   const { message } = useSelector((state: RootState) => state.message);
 
   const [attemptId, setAttemptId] = useState<number | null>(null);
-  const [openResultsPopup, setOpenResultsPopup] = useState<boolean>(false);
 
-  const [assessmentResults, setAssessmentResults] =
-    useState<SubmitAssessmentAttemptPayload | null>(null);
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const timerRef = useRef<number | null>(null);
 
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false);
 
   useWarnBeforeLeaving(
     attemptId != null,
@@ -115,7 +109,6 @@ const TakeAssessment: React.FC = () => {
 
   const handleSubmit = useCallback(() => {
     if (id) {
-      // check if at least one question has been answered
       const isAnswered = responses.some((response) => {
         const answer = response.answer;
         return answer instanceof Set ? answer.size > 0 : answer !== "";
@@ -125,9 +118,6 @@ const TakeAssessment: React.FC = () => {
         alert("Please answer at least one question");
         return;
       }
-
-      setOpenResultsPopup(true);
-      setIsSubmitting(true);
 
       const formattedResponses = responses.map((response) => ({
         questionId: response.questionId,
@@ -141,16 +131,16 @@ const TakeAssessment: React.FC = () => {
         attemptId: attemptId as number,
         answers: formattedResponses,
       })
-        .then((data) => {
-          setAssessmentResults(data.data);
+        .then(() => {
+          setShowSuccessSnackbar(true);
+          setTimeout(() => {
+            navigate("/dashboard");
+          }, 1000);
         })
         .catch((err) => {
           dispatch(
             setMessageWithTimeout({ message: err.message, isError: true }),
           );
-        })
-        .finally(() => {
-          setIsSubmitting(false);
         });
     }
   }, [id, attemptId, dispatch, responses]);
@@ -232,12 +222,21 @@ const TakeAssessment: React.FC = () => {
             maxAttempts: assessmentData.attributes.maxAttempts,
             isPublished: assessmentData.attributes.isPublished,
             subject: assessmentData.attributes.subject,
+            requiredMark: assessmentData.attributes.requiredMark,
+            resultDisplayMode: assessmentData.attributes.resultDisplayMode,
           });
 
           // @ts-ignore
           setQuestions(formattedQuestions);
 
-          setTimeLeft(assessmentData.attributes.duration * 60);
+          if (
+            assessmentData.attributes.duration &&
+            assessmentData.attributes.duration > 0
+          ) {
+            setTimeLeft(assessmentData.attributes.duration * 60);
+          } else {
+            setTimeLeft(null);
+          }
         });
       } finally {
         setLoading(false);
@@ -425,6 +424,20 @@ const TakeAssessment: React.FC = () => {
       title={assessment?.name || "Take Assessment"}
       description={assessment?.description}
     >
+      <Snackbar
+        open={showSuccessSnackbar}
+        autoHideDuration={6000}
+        onClose={() => setShowSuccessSnackbar(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setShowSuccessSnackbar(false)}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          Assessment submitted successfully!
+        </Alert>
+      </Snackbar>
       {loading || !assessment || !questions ? (
         <Box
           display="flex"
@@ -515,13 +528,6 @@ const TakeAssessment: React.FC = () => {
         onClose={() => handleConfirmation(false)}
         onConfirm={() => handleConfirmation(true)}
         message="Are you sure you want to start the assessment?"
-      />
-      <AssessmentResult
-        isSubmitting={isSubmitting}
-        open={openResultsPopup}
-        results={assessmentResults}
-        onClose={() => navigate("/dashboard")}
-        onViewDetails={() => navigate("/tests/" + id + "/results/" + attemptId)}
       />
     </PageContainer>
   );

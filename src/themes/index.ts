@@ -16,7 +16,7 @@ export function theme() {
   let paper;
   let textInversePrimary;
   let paperWhite;
-  let paperDark;
+  let primary100;
 
   textPrimary = textInversePrimary = value.textPrimary;
   textSecondary = value.textSecondary;
@@ -27,7 +27,8 @@ export function theme() {
   paper = value.paper;
 
   paperWhite = value.paperWhite;
-  paperDark = value.paperDark;
+
+  primary100 = value.primary100;
 
   return createTheme({
     direction: "ltr",
@@ -380,7 +381,7 @@ export function theme() {
           head: {
             color: textDark,
             fontWeight: 600,
-            backgroundColor: value.paperWhite,
+            backgroundColor: primary100,
           },
           body: {
             color: textDark,

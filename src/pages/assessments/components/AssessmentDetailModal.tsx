@@ -14,14 +14,18 @@ import { AssessmentDetailPayload } from "@/types/apis/assessmentTypes.ts";
 import AssessmentService from "@/api/services/assessmentService";
 import { Resource } from "@/types/apis";
 import QuestionMarkIcon from "@mui/icons-material/QuestionMark";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import TimerIcon from "@mui/icons-material/Timer";
 import ScoreIcon from "@mui/icons-material/Score";
+import PublicIcon from "@mui/icons-material/Public";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import SubjectIcon from "@mui/icons-material/Subject";
+import PreviewIcon from "@mui/icons-material/Preview";
 import { clearMessage, setMessageWithTimeout } from "@/stores/messageSlice.ts";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/stores/store.ts";
 
 import defaultThumbnail from "@assets/images/default-thumbnail.svg";
+import { ResultDisplayMode } from "@/constants/resultDisplayMode.ts";
 
 const style = {
   position: "absolute" as const,
@@ -77,6 +81,9 @@ const AssessmentDetailModal: React.FC<AssessmentDetailModalProps> = ({
         });
     }
   }, [assessmentId, open]);
+
+  const displayValueOrFallback = (value: any, fallback: string = "N/A") =>
+    value !== null && value !== undefined ? value : fallback;
 
   return (
     <>
@@ -150,9 +157,11 @@ const AssessmentDetailModal: React.FC<AssessmentDetailModalProps> = ({
                     {assessmentDetails.attributes.name}
                   </Typography>
                 </Box>
+
                 <Typography
                   id="assessment-detail-modal-description"
                   sx={{
+                    fontStyle: "italic",
                     mt: 2,
                     overflow: "hidden",
                     textOverflow: "ellipsis",
@@ -161,50 +170,116 @@ const AssessmentDetailModal: React.FC<AssessmentDetailModalProps> = ({
                     WebkitBoxOrient: "vertical",
                   }}
                 >
-                  <i>{assessmentDetails.attributes.description}</i>
+                  {displayValueOrFallback(
+                    assessmentDetails.attributes.description,
+                    "No description",
+                  )}
                 </Typography>
-                <Box display="flex" alignItems="center" mt={2}>
-                  <QuestionMarkIcon color="action" sx={{ mr: 1 }} />
-                  <Typography variant="body2">
-                    Total Questions:{" "}
-                    {assessmentDetails.attributes.totalQuestions}
-                  </Typography>
-                </Box>
-                <Box display="flex" alignItems="center" mt={2}>
-                  <AccessTimeIcon color="action" sx={{ mr: 1 }} />
-                  <Typography variant="body2">
-                    Duration: {assessmentDetails.attributes.duration} minutes
-                  </Typography>
-                </Box>
-                <Box display="flex" alignItems="center" mt={2}>
-                  <ScoreIcon color="action" sx={{ mr: 1 }} />
-                  <Typography variant="body2">
-                    Total Marks: {assessmentDetails.attributes.totalMarks}
-                  </Typography>
-                </Box>
-                <Box display="flex" alignItems="center" mt={2}>
-                  <ScoreIcon color="action" sx={{ mr: 1 }} />
-                  <Typography variant="body2">
-                    Passing Marks: {assessmentDetails.attributes.passMarks}
-                  </Typography>
-                </Box>
-                <Box display="flex" alignItems="center" mt={2}>
-                  <EventAvailableIcon color="action" sx={{ mr: 1 }} />
-                  <Typography variant="body2">
-                    Valid From:{" "}
-                    {dayjs(assessmentDetails.attributes.validFrom).format(
-                      "DD/MM/YYYY",
-                    )}
-                  </Typography>
-                </Box>
-                <Box display="flex" alignItems="center" mt={2}>
-                  <EventAvailableIcon color="action" sx={{ mr: 1 }} />
-                  <Typography variant="body2">
-                    Valid To:{" "}
-                    {dayjs(assessmentDetails.attributes.validTo).format(
-                      "DD/MM/YYYY",
-                    )}
-                  </Typography>
+
+                <Box display="flex" mt={3}>
+                  <Box flex={1} overflow="auto" pr={1}>
+                    <Typography variant="body1" sx={{ mb: 1.5 }}>
+                      <SubjectIcon
+                        color="primary"
+                        sx={{ verticalAlign: "middle", mr: 1 }}
+                      />
+                      <b>Subject:</b>{" "}
+                      {displayValueOrFallback(
+                        assessmentDetails.attributes.subject.attributes.name,
+                        "No subject",
+                      )}
+                    </Typography>
+                    <Typography variant="body1" sx={{ mb: 1.5 }}>
+                      <QuestionMarkIcon
+                        color="primary"
+                        sx={{ verticalAlign: "middle", mr: 1 }}
+                      />
+                      <b>Total Questions:</b>{" "}
+                      {displayValueOrFallback(
+                        assessmentDetails.attributes.totalQuestions,
+                        "Not specified",
+                      )}
+                    </Typography>
+                    <Typography variant="body1" sx={{ mb: 2 }}>
+                      <EventAvailableIcon
+                        color="primary"
+                        sx={{ verticalAlign: "middle", mr: 1 }}
+                      />
+                      <b>Valid From:</b>{" "}
+                      {dayjs(assessmentDetails.attributes.validFrom).format(
+                        "DD/MM/YYYY",
+                      )}
+                    </Typography>
+                    <Typography variant="body1" sx={{ mb: 2 }}>
+                      <EventAvailableIcon
+                        color="primary"
+                        sx={{ verticalAlign: "middle", mr: 1 }}
+                      />
+                      <b>Valid To:</b>{" "}
+                      {dayjs(assessmentDetails.attributes.validTo).format(
+                        "DD/MM/YYYY",
+                      )}
+                    </Typography>
+                    <Typography variant="body1" sx={{ mb: 2 }}>
+                      <PublicIcon
+                        color="primary"
+                        sx={{ verticalAlign: "middle", mr: 1 }}
+                      />
+                      <b>Published At:</b>{" "}
+                      {dayjs(assessmentDetails.attributes.publishedAt).format(
+                        "DD/MM/YYYY",
+                      )}
+                    </Typography>
+                  </Box>
+                  <Box width="auto" overflow="auto" sx={{ pl: 1 }}>
+                    <Typography variant="body1" sx={{ mb: 1.5 }}>
+                      <TimerIcon
+                        color="primary"
+                        sx={{ verticalAlign: "middle", mr: 1 }}
+                      />
+                      <b>Duration:</b>{" "}
+                      {displayValueOrFallback(
+                        assessmentDetails.attributes.duration,
+                        "No duration",
+                      )}{" "}
+                      {Boolean(assessmentDetails.attributes.duration) && (
+                        <span>minutes</span>
+                      )}
+                    </Typography>
+                    <Typography variant="body1" sx={{ mb: 2 }}>
+                      <ScoreIcon
+                        color="primary"
+                        sx={{ verticalAlign: "middle", mr: 1 }}
+                      />
+                      <b>Total Marks: </b>
+                      {displayValueOrFallback(
+                        assessmentDetails.attributes.totalMarks,
+                      )}
+                    </Typography>
+                    <Typography variant="body1" sx={{ mb: 2 }}>
+                      <ScoreIcon
+                        color="primary"
+                        sx={{ verticalAlign: "middle", mr: 1 }}
+                      />
+                      <b>Pass Marks:</b>{" "}
+                      {displayValueOrFallback(
+                        assessmentDetails.attributes.passMarks,
+                      )}
+                    </Typography>
+                    <Typography variant="body1">
+                      <PreviewIcon
+                        color="primary"
+                        sx={{ verticalAlign: "middle", mr: 1 }}
+                      />
+                      <b>Result Display:</b>{" "}
+                      {displayValueOrFallback(
+                        ResultDisplayMode[
+                          assessmentDetails.attributes.resultDisplayMode
+                        ],
+                        "Not specified",
+                      )}
+                    </Typography>
+                  </Box>
                 </Box>
                 <Button
                   sx={{ mt: 3, width: "100%" }}

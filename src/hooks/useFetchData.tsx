@@ -34,9 +34,11 @@ interface UseFetchDataReturn<ItemType> {
 function useFetchData<ItemType>(
   fetchFunction: (
     params?: QueryParams,
+    id?: string,
   ) => Promise<ApiResponse<Resource<ItemType>[]>>,
   initialPagination: PaginationState,
   searchColumn?: SearchColumn,
+  id?: string,
 ): UseFetchDataReturn<ItemType & Identity> {
   const [items, setItems] = useState<Array<ItemType & Identity>>([]);
   const [pagination, setPagination] =
@@ -56,14 +58,17 @@ function useFetchData<ItemType>(
     setError(null);
 
     try {
-      const { data, meta } = await fetchFunction({
-        page: pagination.page + 1,
-        perPage: pagination.perPage,
-        searchType: searchCriteria.type,
-        searchKeyword: debouncedSearchTerm,
-        searchColumn: searchCriteria.column?.key,
-        filters,
-      });
+      const { data, meta } = await fetchFunction(
+        {
+          page: pagination.page + 1,
+          perPage: pagination.perPage,
+          searchType: searchCriteria.type,
+          searchKeyword: debouncedSearchTerm,
+          searchColumn: searchCriteria.column?.key,
+          filters,
+        },
+        id,
+      );
 
       const items = Array.isArray(data) ? data : [data];
       setItems(items.map((item) => ({ ...item.attributes, id: item.id })));

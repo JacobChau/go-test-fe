@@ -11,12 +11,7 @@ import ParentCard from "@components/Card/ParentCard.tsx";
 import { PublishAssessmentFormValues } from "@/pages/assessments/CreateOrUpdateAssessment.tsx";
 
 const PublishTestSchema = Yup.object().shape({
-  validFrom: Yup.date()
-    .min(
-      dayjs().toDate(),
-      "Start date and time must be after current date and time",
-    )
-    .required("Start date and time is required"),
+  validFrom: Yup.date().required("Start date and time is required"),
   validTo: Yup.date()
     .min(
       Yup.ref("validFrom"),

@@ -15,6 +15,8 @@ import {
   CreateAssessmentParams,
   SubmitAssessmentAttemptParams,
   SubmitAssessmentAttemptPayload,
+  UpdateAssessmentAttemptAnswerMarkParams,
+  UpdateAssessmentAttemptAnswerMarkPayload,
 } from "@/types/apis/assessmentTypes.ts";
 
 const ASSESSMENT_API_URL = "/assessments";
@@ -95,12 +97,45 @@ const getAssessmentResults = async (
   return response.data;
 };
 
+const getAssessmentResultsByAssessmentId = async (
+  id: string,
+  data?: QueryParams,
+): Promise<ApiResponse<Resource<AssessmentResultPayload>[]>> => {
+  const response = await client.get(`${ASSESSMENT_API_URL}/${id}/results`, {
+    params: data,
+  });
+  return response.data;
+};
+
 const getAssessmentManagement = async (
   data?: QueryParams,
 ): Promise<ApiResponse<Resource<AssessmentAttributes>[]>> => {
   const response = await client.get(`${ASSESSMENT_API_URL}/management`, {
     params: data,
   });
+  return response.data;
+};
+
+const updateAssessmentAttemptAnswer = async (
+  assessmentId: string,
+  attemptId: string,
+  assessmentQuestionId: number,
+  data: UpdateAssessmentAttemptAnswerMarkParams,
+): Promise<ApiResponse<UpdateAssessmentAttemptAnswerMarkPayload>> => {
+  const response = await client.put(
+    `${ASSESSMENT_API_URL}/${assessmentId}/results/${attemptId}/answers/${assessmentQuestionId}`,
+    data,
+  );
+  return response.data;
+};
+
+const publishAssessmentResult = async (
+  assessmentId: string,
+  attemptId: string,
+): Promise<ApiResponse<AssessmentResultDetailPayload>> => {
+  const response = await client.put(
+    `${ASSESSMENT_API_URL}/${assessmentId}/results/${attemptId}/publish`,
+  );
   return response.data;
 };
 
@@ -116,6 +151,9 @@ const AssessmentService = {
   deleteAssessment,
   getAssessmentResults,
   getAssessmentManagement,
+  getAssessmentResultsByAssessmentId,
+  updateAssessmentAttemptAnswer,
+  publishAssessmentResult,
 };
 
 export default AssessmentService;

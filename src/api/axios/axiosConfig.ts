@@ -32,6 +32,7 @@ client.interceptors.request.use(
 );
 
 client.interceptors.response.use(
+  // @ts-ignore
   (response) => {
     return successHandler(response);
   },

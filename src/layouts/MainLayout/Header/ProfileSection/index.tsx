@@ -19,7 +19,6 @@ import PersonTwoToneIcon from "@mui/icons-material/PersonTwoTone";
 import SettingsTwoToneIcon from "@mui/icons-material/SettingsTwoTone";
 import AccountCircleTwoToneIcon from "@mui/icons-material/AccountCircleTwoTone";
 import MeetingRoomTwoToneIcon from "@mui/icons-material/MeetingRoomTwoTone";
-import { useNavigate } from "react-router-dom";
 import { removeTokens } from "@/helpers";
 
 // ==============================|| PROFILE SECTION ||============================== //

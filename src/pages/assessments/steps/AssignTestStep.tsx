@@ -101,10 +101,10 @@ const AssignTest: React.FC<AssignTestProps> = ({
         </Alert>
       </Snackbar>
       <PageContainer
-        title={"Add Groups to Test"}
-        description={"Add groups to test"}
+        title={"Add Test to Groups"}
+        description={"Add Test to Groups"}
       >
-        <ParentCard title={"Add Groups to Test"}>
+        <ParentCard title={"Add Test to Groups"}>
           <BlankCard>
             {loading && (
               <Box
@@ -205,11 +205,11 @@ const AssignTest: React.FC<AssignTestProps> = ({
                         />
                       </TableCell>
                       {GroupColumns.map((column, index) => (
-                        // @ts-ignore
                         <TableCell key={index} sx={column.sx}>
                           {column.render
                             ? column.render(group)
-                            : group[column.key]}
+                            : // @ts-ignore
+                              group[column.key]}
                         </TableCell>
                       ))}
                     </TableRow>

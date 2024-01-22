@@ -1,6 +1,6 @@
 import { QuestionType } from "@/constants/question.ts";
 import { FC, useCallback, useState } from "react";
-import { QuestionData } from "@/pages/question/CreateOrUpdateQuestion.tsx";
+import { QuestionData } from "@/pages/question/CreateOrUpdateQuestionPage.tsx";
 import {
   FillInTheBlanks,
   MultipleChoiceOptions,
@@ -51,7 +51,7 @@ const QuestionOptions: FC<QuestionOptionsProps> = ({
         idx === index ? { ...option, [field]: value } : option,
       );
 
-      setQuestionData({ ...questionData, options: updatedOptions });
+      setQuestionData({ options: updatedOptions });
     },
     [questionData.options, setQuestionData],
   );
@@ -73,14 +73,14 @@ const QuestionOptions: FC<QuestionOptionsProps> = ({
       ...questionData.options,
       { id: questionData.options.length + 1, text: "", isCorrect: true },
     ];
-    setQuestionData({ ...questionData, options: updatedOptions });
+    setQuestionData({ options: updatedOptions });
   };
 
   const deleteBlank = (index: number) => {
     const updatedOptions = questionData?.options?.filter(
-      (_, idx) => idx !== index,
+      (_: any, idx: number) => idx !== index,
     );
-    setQuestionData({ ...questionData, options: updatedOptions });
+    setQuestionData({ options: updatedOptions });
   };
 
   switch (questionData.type) {

@@ -1,5 +1,7 @@
 import { IconButton, Grid } from "@mui/material";
-import { IconEdit, IconTrash } from "@tabler/icons-react";
+import AssessmentIcon from "@mui/icons-material/Assessment";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import React, { useState } from "react";
 import { ActionTableProps } from "@components/PaginationTable/GenericTable.tsx";
 import { useNavigate } from "react-router-dom";
@@ -50,9 +52,20 @@ const AssessmentAction: React.FC<ActionTableProps> = (
             aria-controls="test-actions-menu"
             aria-haspopup="true"
             aria-expanded="true"
+            onClick={() => navigate(`/tests/${props.row.id}/results`)}
+          >
+            <AssessmentIcon />
+          </IconButton>
+        </Grid>
+        <Grid item xs>
+          <IconButton
+            id="test-actions-button"
+            aria-controls="test-actions-menu"
+            aria-haspopup="true"
+            aria-expanded="true"
             onClick={handleEditClick}
           >
-            <IconEdit width={18} />
+            <EditIcon />
           </IconButton>
         </Grid>
         <Grid item xs>
@@ -63,7 +76,7 @@ const AssessmentAction: React.FC<ActionTableProps> = (
             aria-expanded="true"
             onClick={handleDeleteClick}
           >
-            <IconTrash width={18} />
+            <DeleteIcon />
           </IconButton>
         </Grid>
       </Grid>

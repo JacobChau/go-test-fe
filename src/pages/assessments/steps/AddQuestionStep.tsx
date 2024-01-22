@@ -7,8 +7,11 @@ import QuestionService from "@/api/services/questionService.ts";
 import {
   Alert,
   Box,
+  Button,
   Checkbox,
+  Chip,
   CircularProgress,
+  Collapse,
   Grid,
   Snackbar,
   Table,
@@ -25,11 +28,12 @@ import QuestionFilters from "@/pages/question/components/QuestionFilters.tsx";
 import { useFetchData } from "@/hooks";
 import BlankCard from "@components/Card/BlankCard.tsx";
 import {
+  CreateOrUpdateQuestion,
   QuestionColumns,
   QuestionSearchColumn,
 } from "@/pages/question/components";
 import { ActionTable } from "@components/PaginationTable";
-import React, { FC, useMemo } from "react";
+import React, { FC, useEffect, useMemo, useRef, useState } from "react";
 import SearchComponent from "@components/Search/SearchComponent.tsx";
 import ParentCard from "@components/Card/ParentCard.tsx";
 import PageContainer from "@components/Container/PageContainer.tsx";
@@ -49,6 +53,7 @@ const AddQuestionStep: FC<AddQuestionStepProps> = ({
   const {
     items: questions,
     searchTerm,
+    fetchData: fetchQuestions,
     filters,
     searchCriteria,
     handleSearchTermChange,
@@ -66,6 +71,24 @@ const AddQuestionStep: FC<AddQuestionStepProps> = ({
     QuestionSearchColumn[0],
   );
 
+  const [isCreateOrUpdateVisible, setIsCreateOrUpdateVisible] = useState(false);
+  const createOrUpdateRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isCreateOrUpdateVisible && createOrUpdateRef.current) {
+      setTimeout(() => {
+        createOrUpdateRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
+    }
+  }, [isCreateOrUpdateVisible]);
+
+  const toggleCreateOrUpdateVisibility = () => {
+    setIsCreateOrUpdateVisible(!isCreateOrUpdateVisible);
+  };
+
   const handleSelectQuestion = (
     id: number,
     event: React.ChangeEvent<HTMLInputElement>,
@@ -78,10 +101,9 @@ const AddQuestionStep: FC<AddQuestionStepProps> = ({
         newSelected.delete(id);
       } else {
         newSelected.set(id, {
-          id: question.id,
+          id: Number(question.id),
           content: question.content,
           type: question.type,
-          marks: 0,
           order: null,
         });
       }
@@ -100,7 +122,6 @@ const AddQuestionStep: FC<AddQuestionStepProps> = ({
             id: question.id,
             content: question.content,
             type: question.type,
-            marks: 0,
             order: null,
           });
         });
@@ -182,21 +203,40 @@ const AddQuestionStep: FC<AddQuestionStepProps> = ({
                 />
               </Grid>
             </Grid>
-
             <Grid container sx={{ marginBottom: 2, alignItems: "center" }}>
-              <Grid item xs={6}>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" sx={{ marginBottom: 1 }}>
-                    Selected Questions
-                  </Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="body1">
-                    {selectedQuestions.size} question(s) selected
-                  </Typography>
-                </Grid>
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">Selected Questions:</Typography>
+                <Typography variant="body1" sx={{ marginBottom: 1 }}>
+                  {selectedQuestions.size} question(s) selected
+                </Typography>
+                <Box
+                  sx={{
+                    maxHeight: "8em",
+                    overflowY: "auto",
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "0.5em",
+                  }}
+                >
+                  {Array.from(selectedQuestions.values()).map(
+                    (question, index) => (
+                      <Chip
+                        key={index}
+                        label={
+                          question.id + ". " + question.content.slice(0, 45)
+                        }
+                        color="primary"
+                        variant="outlined"
+                      />
+                    ),
+                  )}
+                </Box>
               </Grid>
             </Grid>
+            <Grid
+              container
+              sx={{ marginBottom: 2, alignItems: "center" }}
+            ></Grid>
             <TableContainer sx={{ position: "relative" }}>
               <Table aria-label={"question-bank"}>
                 <TableHead>
@@ -278,6 +318,23 @@ const AddQuestionStep: FC<AddQuestionStepProps> = ({
                 </TableFooter>
               </Table>
             </TableContainer>
+            <Box sx={{ my: 2 }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={toggleCreateOrUpdateVisibility}
+              >
+                {isCreateOrUpdateVisible
+                  ? "Hide create Question"
+                  : "You can also create a new question here"}
+              </Button>
+            </Box>
+            <Collapse in={isCreateOrUpdateVisible} ref={createOrUpdateRef}>
+              <CreateOrUpdateQuestion
+                setSelectedQuestions={setSelectedQuestions}
+                fetchQuestions={fetchQuestions}
+              />
+            </Collapse>{" "}
           </BlankCard>
         </ParentCard>
       </PageContainer>

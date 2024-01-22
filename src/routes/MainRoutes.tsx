@@ -7,7 +7,7 @@ import ErrorNotFound from "@/pages/errors/ErrorNotFound";
 const UserList = Loadable(lazy(() => import("@/pages/users/UserList.tsx")));
 const UserDetail = Loadable(lazy(() => import("@/pages/users/UserDetail.tsx")));
 const CreateOrUpdateQuestion = Loadable(
-  lazy(() => import("@/pages/question/CreateOrUpdateQuestion.tsx")),
+  lazy(() => import("@/pages/question/CreateOrUpdateQuestionPage.tsx")),
 );
 const QuestionBank = Loadable(
   lazy(() => import("@/pages/question/QuestionBank.tsx")),
@@ -37,6 +37,10 @@ const AssessmentResultListPage = Loadable(
   lazy(() => import("@/pages/assessments/AssessmentResultPagination.tsx")),
 );
 
+const GroupMemberList = Loadable(
+  lazy(() => import("@/pages/groups/GroupMemberList.tsx")),
+);
+
 const MainRoutes = {
   path: "/",
   element: (
@@ -60,6 +64,10 @@ const MainRoutes = {
     {
       path: "/groups",
       element: <GroupList />,
+    },
+    {
+      path: "/groups/:id/members",
+      element: <GroupMemberList />,
     },
     {
       path: "/questions/create",
@@ -100,6 +108,10 @@ const MainRoutes = {
     {
       path: "/tests/:id/results/:attemptId",
       element: <AssessmentResult />,
+    },
+    {
+      path: "/tests/:id/results",
+      element: <AssessmentResultListPage />,
     },
     {
       path: "*",

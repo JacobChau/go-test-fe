@@ -34,6 +34,8 @@ import {
 import AssessmentService from "@/api/services/assessmentService.ts";
 import { useNavigate, useParams } from "react-router-dom";
 import SubjectService from "@/api/services/subjectService.ts";
+import { getKeyByValue } from "@/helpers";
+import { ResultDisplayMode } from "@/constants/resultDisplayMode.ts";
 
 const steps = [
   "Create Test",
@@ -48,10 +50,12 @@ export interface CreateAssessmentFormValues {
   subject?: string;
   description?: string;
   duration?: number;
-  totalMarks: number;
+  totalMarks?: number;
   passMarks?: number;
   maxAttempts?: number;
   thumbnail?: string | null;
+  requiredMark: boolean;
+  resultDisplayMode?: string;
 }
 
 export interface PublishAssessmentFormValues {
@@ -90,17 +94,20 @@ const CreateOrUpdateAssessment = () => {
     subject: "",
     description: "",
     duration: 0,
-    totalMarks: 0,
+    requiredMark: true,
   });
 
   const [publishData, setPublishData] = useState<PublishAssessmentFormValues>({
     validFrom: dayjs(),
-    validTo: dayjs(),
+    validTo: dayjs().add(1, "day"),
     isPublished: false,
   });
 
   const [activeStep, setActiveStep] = useState(0);
   const formikRef = React.useRef<FormikProps<any>>(null);
+  const [requiredMark, setRequiredMark] = useState<boolean>(true);
+  const [durationEnabled, setDurationEnabled] = useState<boolean>(true);
+  const [maxAttemptsEnabled, setMaxAttemptsEnabled] = useState<boolean>(true);
 
   const resetState = useCallback(() => {
     setSelectedQuestions(
@@ -112,11 +119,11 @@ const CreateOrUpdateAssessment = () => {
       subject: "",
       description: "",
       duration: 0,
-      totalMarks: 0,
+      requiredMark,
     });
     setPublishData({
       validFrom: dayjs(),
-      validTo: dayjs(),
+      validTo: dayjs().add(1, "day"),
       isPublished: false,
     });
     setActiveStep(0);
@@ -166,12 +173,26 @@ const CreateOrUpdateAssessment = () => {
             totalMarks: assessmentData.attributes.totalMarks,
             passMarks: assessmentData.attributes.passMarks,
             maxAttempts: assessmentData.attributes.maxAttempts,
+            requiredMark: assessmentData.attributes.requiredMark,
+            resultDisplayMode:
+              ResultDisplayMode[assessmentData.attributes.resultDisplayMode],
           });
           setPublishData({
             validFrom: dayjs(assessmentData.attributes.validFrom),
             validTo: dayjs(assessmentData.attributes.validTo),
             isPublished: assessmentData.attributes.isPublished,
           });
+
+          setDurationEnabled(
+            assessmentData.attributes.duration !== null &&
+              assessmentData.attributes.duration !== undefined,
+          );
+          setMaxAttemptsEnabled(
+            assessmentData.attributes.maxAttempts !== null &&
+              assessmentData.attributes.maxAttempts !== undefined,
+          );
+
+          setRequiredMark(Boolean(assessmentData.attributes.requiredMark));
         } else {
           resetState();
           const subjects = await SubjectService.getSubjects();
@@ -218,26 +239,20 @@ const CreateOrUpdateAssessment = () => {
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
         break;
       case 2:
-        const sumOfMarks = Array.from(selectedQuestions.values()).reduce(
-          (acc, q) => acc + parseFloat(q.marks.toFixed(2)),
-          0,
-        );
-        if (!floatEqual(formData.totalMarks, sumOfMarks, tolerance)) {
-          setSnackbar({
-            open: true,
-            message: `Total marks do not match. Expected: ${formData.totalMarks}, but found: ${sumOfMarks}. Please modify accordingly.`,
-            severity: "error",
-          });
-          return;
-        }
-
-        if (selectedQuestions.size === 0) {
-          setSnackbar({
-            open: true,
-            message: "Please add at least one question.",
-            severity: "error",
-          });
-          return;
+        if (requiredMark && formData.totalMarks) {
+          // Logic when requiredMark is true
+          const sumOfMarks = Array.from(selectedQuestions.values()).reduce(
+            (acc, q) => acc + parseFloat((q.marks || 0).toFixed(2)),
+            0,
+          );
+          if (!floatEqual(formData.totalMarks, sumOfMarks, tolerance)) {
+            setSnackbar({
+              open: true,
+              message: `Total marks do not match. Expected: ${formData.totalMarks}, but found: ${sumOfMarks}. Please modify accordingly.`,
+              severity: "error",
+            });
+            return;
+          }
         }
 
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -279,13 +294,19 @@ const CreateOrUpdateAssessment = () => {
       validFrom: publishData.validFrom?.toDate(),
       validTo: publishData.validTo?.toDate(),
       isPublished: publishData.isPublished,
-      questions: Array.from(selectedQuestions.values()).map((q) => ({
+      questions: Array.from(selectedQuestions.values()).map((q, index) => ({
         id: Number(q.id),
         marks: q.marks,
-        order: q.order,
+        order: q.order || index,
       })),
       groupIds: Array.from(selectedGroups).map((g) => Number(g)),
+      requiredMark: formData.requiredMark,
+      resultDisplayMode: formData.resultDisplayMode
+        ? getKeyByValue(ResultDisplayMode, formData.resultDisplayMode)
+        : undefined,
     };
+
+    console.log(assessmentPayload);
 
     if (isEditMode) {
       await AssessmentService.updateAssessment(id, assessmentPayload);
@@ -308,6 +329,7 @@ const CreateOrUpdateAssessment = () => {
     }, 1500);
   };
 
+  console.log("formData", formData);
   const handlePublishFormSubmit = (values: PublishAssessmentFormValues) => {
     if (formData.duration && values.validFrom && values.validTo) {
       const diff = values.validTo.diff(values.validFrom, "minute");
@@ -334,10 +356,16 @@ const CreateOrUpdateAssessment = () => {
         return (
           <EditTestForm
             editMode={isEditMode}
+            requiredMark={requiredMark}
+            setRequiredMark={setRequiredMark}
             onSubmit={handleFormSubmit}
             formikRef={formikRef}
             values={formData}
             subjects={subjects}
+            durationEnabled={durationEnabled}
+            setDurationEnabled={setDurationEnabled}
+            maxAttemptsEnabled={maxAttemptsEnabled}
+            setMaxAttemptsEnabled={setMaxAttemptsEnabled}
           />
         );
       case 1:
@@ -352,6 +380,7 @@ const CreateOrUpdateAssessment = () => {
           <QuestionSetting
             questions={selectedQuestions}
             setQuestions={setSelectedQuestions}
+            requiredMark={requiredMark}
             totalMarks={formData.totalMarks}
           />
         );
