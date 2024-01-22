@@ -1,0 +1,10 @@
+services:
+  - type: static-site
+    name: your-site-name
+    env: static
+    buildCommand: npm run build
+    publishDirectory: dist
+    staticPublishPath: /
+    rewriteRules:
+      - source: /*
+        destination: /index.html
