@@ -19,6 +19,7 @@ const NavGroup: FC<NavGroupProps> = ({ item }) => {
           case "collapse":
             return <NavCollapse key={menu.id} menu={menu} level={1} />;
           case "item":
+            // @ts-ignore
             return <NavItem key={menu.id} item={menu} level={1} />;
           default:
             return (

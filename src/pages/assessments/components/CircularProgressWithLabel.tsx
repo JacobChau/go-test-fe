@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, CircularProgress, useTheme } from "@mui/material";
+import { Box, Typography, CircularProgress } from "@mui/material";
 
 interface CircularProgressWithLabelProps {
   value: number; // percentage value
@@ -8,8 +8,6 @@ interface CircularProgressWithLabelProps {
 const CircularProgressWithLabel: React.FC<CircularProgressWithLabelProps> = ({
   value,
 }) => {
-  const theme = useTheme();
-
   return (
     <Box position="relative" display="inline-flex">
       <CircularProgress

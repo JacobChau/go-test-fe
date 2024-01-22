@@ -1,3 +1,4 @@
+import { FC } from "react";
 import {
   FormControlLabel,
   Grid,
@@ -7,8 +8,13 @@ import {
   useTheme,
 } from "@mui/material";
 import { HandleOptionChange } from "@/pages/question/components/QuestionOptions.tsx";
-import { FC } from "react";
-import { Option } from "@/pages/question/CreateOrUpdateQuestionPage.tsx";
+
+export interface Option {
+  id: string | number;
+  text?: string;
+  label?: string;
+  isCorrect?: boolean;
+}
 
 export interface TrueFalseOptionsProps {
   options: Option[];

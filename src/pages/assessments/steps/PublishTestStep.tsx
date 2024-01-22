@@ -45,6 +45,7 @@ const PublishTest: React.FC<PublishTestProps> = ({
               <Grid container spacing={3}>
                 <Grid item xs={12}>
                   <Field name="isPublished">
+                    {/* @ts-ignore */}
                     {({ field }) => (
                       <FormControlLabel
                         control={<Switch {...field} checked={field.value} />}

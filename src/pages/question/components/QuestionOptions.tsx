@@ -1,11 +1,22 @@
 import { QuestionType } from "@/constants/question.ts";
 import { FC, useCallback, useState } from "react";
-import { QuestionData } from "@/pages/question/CreateOrUpdateQuestionPage.tsx";
 import {
   FillInTheBlanks,
   MultipleChoiceOptions,
   TrueFalseOptions,
 } from "@/pages/question/components/options";
+import { ExplanationAttributes, IdentityOptional } from "@/types/apis";
+import { Option } from "@/pages/question/components/CreateOrUpdateQuestion.tsx";
+
+export interface QuestionData {
+  text: string;
+  options: Option[];
+  type: QuestionType;
+  categoryId: string;
+  passageId?: string;
+  explanation?: ExplanationAttributes & IdentityOptional;
+  hasQuillEditor: boolean;
+}
 
 export interface QuestionOptionsProps {
   questionData: Partial<QuestionData>;
@@ -70,7 +81,9 @@ const QuestionOptions: FC<QuestionOptionsProps> = ({
 
   const addNewBlank = () => {
     const updatedOptions = [
+      // @ts-ignore
       ...questionData.options,
+      // @ts-ignore
       { id: questionData.options.length + 1, text: "", isCorrect: true },
     ];
     setQuestionData({ options: updatedOptions });
@@ -107,6 +120,7 @@ const QuestionOptions: FC<QuestionOptionsProps> = ({
     case QuestionType.TrueFalse:
       return (
         <TrueFalseOptions
+          // @ts-ignore
           options={questionData.options}
           handleOptionChange={handleSingleAnswerOptionChange}
         />
@@ -114,6 +128,7 @@ const QuestionOptions: FC<QuestionOptionsProps> = ({
     case QuestionType.FillIn:
       return (
         <FillInTheBlanks
+          // @ts-ignore
           options={questionData.options}
           handleOptionChange={handleFillInBlankOptionChange}
           addNewBlank={addNewBlank}

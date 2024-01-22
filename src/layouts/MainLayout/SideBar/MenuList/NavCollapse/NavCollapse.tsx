@@ -1,6 +1,5 @@
 import React from "react";
 
-// material-ui
 import { useTheme } from "@mui/material/styles";
 import {
   Typography,
@@ -29,7 +28,7 @@ interface NavCollapseProps {
 const NavCollapse: React.FC<NavCollapseProps> = ({ menu, level }) => {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
-  const [selected, setSelected] = React.useState(null);
+  const [selected, setSelected] = React.useState<string | null>(null);
 
   const handleClick = () => {
     setOpen(!open);
@@ -42,6 +41,7 @@ const NavCollapse: React.FC<NavCollapseProps> = ({ menu, level }) => {
           case "collapse":
             return <NavCollapse key={item.id} menu={item} level={level + 1} />;
           case "item":
+            // @ts-ignore
             return <NavItem key={item.id} item={item} level={level + 1} />;
           default:
             return (

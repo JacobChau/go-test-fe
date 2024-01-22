@@ -41,7 +41,8 @@ const ProfileSection = () => {
     setOpen((prevOpen) => !prevOpen);
   };
 
-  const handleClose = (event: React.MouseEvent<Document, MouseEvent>) => {
+  const handleClose = (event: MouseEvent | TouchEvent) => {
+    // @ts-ignore
     if (anchorRef.current && anchorRef.current.contains(event.target)) {
       return;
     }
@@ -52,6 +53,7 @@ const ProfileSection = () => {
   const prevOpen = React.useRef(open);
   React.useEffect(() => {
     if (prevOpen.current && !open) {
+      // @ts-ignore
       anchorRef.current.focus();
     }
 

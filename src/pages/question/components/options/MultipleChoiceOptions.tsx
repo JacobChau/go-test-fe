@@ -1,3 +1,4 @@
+import { FC, useCallback } from "react";
 import {
   Checkbox,
   FormControlLabel,
@@ -10,8 +11,14 @@ import {
   Switch,
 } from "@mui/material";
 import QuillEditor from "@components/Form/QuillEditor/QuillEditor.tsx";
-import { FC, useCallback } from "react";
 import { HandleOptionChange } from "@/pages/question/components/QuestionOptions.tsx";
+
+interface Option {
+  id: string | number;
+  text?: string;
+  label?: string;
+  isCorrect?: boolean;
+}
 
 export interface MultipleChoiceOptionsProps {
   isMultipleAnswer: boolean;

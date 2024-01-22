@@ -93,14 +93,14 @@ const AddMemberForm: FC<AddMemberFormProps> = ({ open, onClose, onSave }) => {
         onSubmit={onSubmit}
       >
         {({ handleSubmit, values, setFieldValue }) => {
-          const handleClick = (event: any, userId: string) => {
+          const handleClick = async (event: any, userId: string) => {
             event.preventDefault();
             event.stopPropagation();
-            const newMemberIds = values.memberIds.includes(userId)
+            const newMemberIds = values.memberIds.includes(userId as never)
               ? values.memberIds.filter((id) => id !== userId) // Remove userId
               : [...values.memberIds, userId]; // Add userId
 
-            setFieldValue("memberIds", newMemberIds);
+            await setFieldValue("memberIds", newMemberIds);
           };
 
           return (
@@ -157,7 +157,9 @@ const AddMemberForm: FC<AddMemberFormProps> = ({ open, onClose, onSave }) => {
                               <FormControlLabel
                                 control={
                                   <Checkbox
-                                    checked={values.memberIds.includes(user.id)}
+                                    checked={values.memberIds.includes(
+                                      user.id as never,
+                                    )}
                                   />
                                 }
                                 label={`${user.name} (${user.email})`}

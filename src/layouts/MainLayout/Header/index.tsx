@@ -11,7 +11,6 @@ import ProfileSection from "./ProfileSection";
 import MenuTwoToneIcon from "@mui/icons-material/MenuTwoTone";
 import Logo from "@assets/images/logo-main.svg";
 import { drawerWidth } from "@/config";
-import NotificationSection from "@/layouts/MainLayout/Header/NotificationSection.tsx";
 
 // ==============================|| HEADER ||============================== //
 
