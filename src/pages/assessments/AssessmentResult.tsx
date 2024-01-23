@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   Box,
@@ -15,6 +15,7 @@ import {
   IconButton,
   Button,
   Alert,
+  Avatar,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AssessmentService from "@/api/services/assessmentService";
@@ -26,21 +27,25 @@ import {
   QuestionResultPayload,
   UpdateAssessmentAttemptAnswerMarkParams,
 } from "@/types/apis/assessmentTypes.ts";
-import PageContainer from "@components/Container/PageContainer.tsx";
+import parse from "html-react-parser";
 import { QuestionType } from "@/constants/question";
 import { useTheme } from "@mui/material/styles";
 import { ParentCard } from "@components/Card";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
+import EmailIcon from "@mui/icons-material/Email";
+import PublishIcon from "@mui/icons-material/Publish";
+import CheckIcon from "@mui/icons-material/Check";
 import { CircularProgressBar } from "@/pages/assessments/components";
-import parse from "html-react-parser";
 import { containsHtml } from "@/helpers";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from "@mui/icons-material/Close";
 import UserService from "@/api/services/userService.ts";
+import PageContainer from "@components/Container/PageContainer.tsx";
 import { OptionDetailPayload, Resource, UserAttributes } from "@/types/apis";
 import { UserRole } from "@/constants/userRole.ts";
+import avatarDefault from "@assets/images/avatar-default.svg";
 
 const AssessmentResultPage: React.FC = () => {
   const theme = useTheme();
@@ -56,6 +61,7 @@ const AssessmentResultPage: React.FC = () => {
   const [expandedQuestion, setExpandedQuestion] = React.useState<number | null>(
     null,
   );
+  const [isPublished, setIsPublished] = useState<boolean>(false);
 
   const [currentUser, setCurrentUser] = useState<Resource<UserAttributes>>();
 
@@ -67,10 +73,6 @@ const AssessmentResultPage: React.FC = () => {
       console.error("Error fetching current user", error);
     }
   }, []);
-
-  React.useEffect(() => {
-    fetchCurrentUser().catch(console.error);
-  }, [fetchCurrentUser]);
 
   const isTeacherAndOwner = useCallback(() => {
     return (
@@ -100,6 +102,7 @@ const AssessmentResultPage: React.FC = () => {
   }>({});
 
   const [totalScore, setTotalScore] = useState<number>(0);
+  const [loadingPublish, setLoadingPublish] = useState<boolean>(false);
 
   const handlePublishResults = async () => {
     if (id && attemptId) {
@@ -116,9 +119,10 @@ const AssessmentResultPage: React.FC = () => {
         );
         return;
       }
-      setLoading(true);
+      setLoadingPublish(true);
       try {
         await AssessmentService.publishAssessmentResult(id, attemptId);
+        setIsPublished(true);
         dispatch(
           setMessageWithTimeout({
             message: "Successfully published marks",
@@ -130,7 +134,7 @@ const AssessmentResultPage: React.FC = () => {
           setMessageWithTimeout({ message: error.message, isError: true }),
         );
       } finally {
-        setLoading(false);
+        setLoadingPublish(false);
       }
     }
   };
@@ -272,6 +276,9 @@ const AssessmentResultPage: React.FC = () => {
           attemptId,
         );
         setAssessmentResult(data);
+        if (data.marked) {
+          setIsPublished(true);
+        }
         setComments(
           data.questions.reduce(
             (acc, question) => {
@@ -305,11 +312,12 @@ const AssessmentResultPage: React.FC = () => {
     }
   }, [attemptId, id]);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    fetchCurrentUser().catch(console.error);
     fetchAssessmentResult().catch((err) => {
       dispatch(setMessageWithTimeout({ message: err.message, isError: true }));
     });
-  }, [dispatch, fetchAssessmentResult]);
+  }, [fetchCurrentUser, fetchAssessmentResult, dispatch]);
 
   if (!assessmentResult) {
     return null;
@@ -453,37 +461,31 @@ const AssessmentResultPage: React.FC = () => {
       question: QuestionResultPayload,
       idx: number,
     ) => {
-      const isSelected = question.userAnswer === option.id;
+      const isSelected = question.userAnswer == option.id;
 
       return (
         <Paper
           variant="outlined"
           sx={{
             display: "flex",
-            alignItems: "flex-center",
+            alignItems: "flex-start",
             padding: theme.spacing(1),
             backgroundColor: isSelected ? theme.palette.action.selected : "",
-            marginBottom: theme.spacing(1), // Add some margin to separate the options
-            wordBreak: "break-word", // Ensure long words do not overflow
-            overflow: "hidden", // Hide overflow
+            marginBottom: theme.spacing(1),
+            wordBreak: "break-word",
+            overflow: "hidden",
           }}
         >
           <Typography
             variant="body1"
             sx={{ display: "flex", alignItems: "center" }}
           >
-            {getOptionLabel(idx)}:{" "}
+            {getOptionLabel(idx)}.{"  "}
           </Typography>
           {containsHtml(option.attributes.answer as string) ? (
             parse(option.attributes.answer as string)
           ) : (
             <Typography component="div">{option.attributes.answer}</Typography>
-          )}
-          {isSelected && (
-            <CheckCircleIcon
-              color="primary"
-              sx={{ marginLeft: theme.spacing(1) }}
-            />
           )}
         </Paper>
       );
@@ -637,8 +639,6 @@ const AssessmentResultPage: React.FC = () => {
       }
     };
 
-    console.log("isSurveyType", isSurveyType);
-
     return (
       <Card key={index} elevation={2} sx={cardStyle}>
         <CardContent>
@@ -662,7 +662,9 @@ const AssessmentResultPage: React.FC = () => {
           )}
 
           <Box display="flex" justifyContent="space-between">
-            <Typography variant="subtitle1">Question {index + 1}</Typography>
+            <Typography variant="subtitle1" color={"primary.main"}>
+              Question {index + 1}
+            </Typography>
             {!isManualMarked && !isSurveyType && (
               <Box display="flex" alignItems="center" gap={1}>
                 {question.isCorrect ? (
@@ -891,12 +893,48 @@ const AssessmentResultPage: React.FC = () => {
     );
   };
 
+  const renderUserInfo = () => {
+    if (!assessmentResult.user) return null;
+
+    const { name, email, avatar } = assessmentResult.user;
+    const avatarUrl = avatar || avatarDefault;
+
+    return (
+      <Card variant="outlined" sx={{ p: 2, mb: 2 }}>
+        <Grid container alignItems="center" spacing={2}>
+          <Grid item>
+            {avatarUrl ? (
+              <Avatar src={avatarUrl} alt={name} />
+            ) : (
+              <Avatar>{name?.charAt(0)}</Avatar> // Display the first letter as the Avatar if no avatar URL
+            )}
+          </Grid>
+          <Grid item xs>
+            <Typography variant="h6">{name}</Typography>
+            <Typography
+              variant="body1"
+              component="div"
+              sx={{ display: "flex", alignItems: "center" }}
+            >
+              <EmailIcon sx={{ mr: 0.5 }} />
+              {email}
+            </Typography>
+          </Grid>
+        </Grid>
+      </Card>
+    );
+  };
+
+  const title = assessmentResult.requiredMark
+    ? `${assessmentResult.name}'s Result`
+    : `${assessmentResult.name}'s Response`;
+
   return (
     <PageContainer
-      title={`${assessmentResult.name}'s Result`}
-      description={"This is an assessment result page"}
+      title={title}
+      description={`This is an assessment result page`}
     >
-      <ParentCard title={`${assessmentResult.name}'s Result`}>
+      <ParentCard title={title}>
         {loading ? (
           <Box
             sx={{
@@ -916,19 +954,57 @@ const AssessmentResultPage: React.FC = () => {
           </Box>
         ) : (
           <Box pt={2} px={4}>
-            {renderOverallScore()}
+            {assessmentResult.user && renderUserInfo()}
+            {assessmentResult.requiredMark && renderOverallScore()}
             {assessmentResult.questions.map((question, index) =>
               renderQuestionCard(question, index),
             )}
             {isTeacherAndOwner() && (
               <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                {/*Loading overlay*/}
+                {loadingPublish && (
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: "rgba(255, 255, 255, 0.8)",
+                      zIndex: 10,
+                    }}
+                  >
+                    <CircularProgress />
+                  </Box>
+                )}
                 <Button
                   variant="contained"
-                  color="primary"
+                  color={isPublished ? "success" : "primary"}
                   onClick={handlePublishResults}
-                  disabled={loading}
+                  disabled={loadingPublish}
                 >
-                  Publish Results
+                  {isPublished ? (
+                    <Typography
+                      variant="body1"
+                      component="span"
+                      sx={{ display: "flex", alignItems: "center" }}
+                    >
+                      <CheckIcon sx={{ mr: 1 }} />
+                      Publish Again
+                    </Typography>
+                  ) : (
+                    <Typography
+                      variant="body1"
+                      component="span"
+                      sx={{ display: "flex", alignItems: "center" }}
+                    >
+                      <PublishIcon sx={{ mr: 1 }} />
+                      Publish Results
+                    </Typography>
+                  )}
                 </Button>
                 {message && (
                   <Alert

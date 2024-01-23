@@ -52,7 +52,11 @@ const AssessmentAction: React.FC<ActionTableProps> = (
             aria-controls="test-actions-menu"
             aria-haspopup="true"
             aria-expanded="true"
-            onClick={() => navigate(`/tests/${props.row.id}/results`)}
+            onClick={() =>
+              navigate(`/tests/${props.row.id}/results`, {
+                state: { name: props.row.name },
+              })
+            }
           >
             <AssessmentIcon />
           </IconButton>

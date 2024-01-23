@@ -41,7 +41,8 @@ const AssessmentResultCard: React.FC<AssessmentCardProps> = ({
   );
 
   const showDetailMode = Boolean(
-    assessmentResult.attributes.displayMode &&
+    assessmentResult.attributes.marked &&
+      assessmentResult.attributes.displayMode &&
       ResultDisplayMode[assessmentResult.attributes.displayMode] ===
         ResultDisplayMode.DisplayMarkAndAnswers,
   );
@@ -114,7 +115,7 @@ const AssessmentResultCard: React.FC<AssessmentCardProps> = ({
           </Typography>
         )}
         {user && <UserComponent username={user.name} avatarUrl={user.avatar} />}
-        {canShowResult && showDetailMode && (
+        {showDetailMode && (
           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
             <Button
               size="small"

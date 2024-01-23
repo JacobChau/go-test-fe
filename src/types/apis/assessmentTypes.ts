@@ -100,6 +100,8 @@ export interface AssessmentResultDetailPayload {
   ownerId: number;
   questions: Array<QuestionResultPayload>;
   requiredMark: boolean;
+  marked: boolean;
+  user?: Partial<UserAttributes>;
 }
 
 export interface QuestionResultPayload {

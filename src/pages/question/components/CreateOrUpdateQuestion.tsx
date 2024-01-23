@@ -613,6 +613,7 @@ const CreateOrUpdateQuestion: React.FC<CreateOrUpdateQuestionProps> = ({
                 id="category"
                 value={questionData.categoryId}
                 onChange={handleCategoryChange}
+                label="Select Category"
               >
                 {categories.map((category) => (
                   <MenuItem key={category.id} value={category.id}>
@@ -638,16 +639,19 @@ const CreateOrUpdateQuestion: React.FC<CreateOrUpdateQuestionProps> = ({
                 Select Question Type
               </InputLabel>
               <Select
+                label="Select Question Type"
                 labelId="question-type-label"
                 id="question-type"
                 value={questionData.type}
                 onChange={handleQuestionTypeChange}
               >
-                {Object.values(QuestionType).map((type, index) => (
-                  <MenuItem key={index} value={type}>
-                    {type}
-                  </MenuItem>
-                ))}
+                {Object.values(QuestionType)
+                  .filter((type) => type !== QuestionType.All)
+                  .map((type, index) => (
+                    <MenuItem key={index} value={type}>
+                      {type}
+                    </MenuItem>
+                  ))}
               </Select>
             </FormControl>
           </Grid>

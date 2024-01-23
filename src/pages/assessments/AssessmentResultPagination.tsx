@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Alert,
   Box,
@@ -21,6 +21,7 @@ import AssessmentService from "@/api/services/assessmentService.ts";
 
 const AssessmentResultPagination: React.FC = () => {
   const { id } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const [results, setResults] = useState<Resource<AssessmentResultPayload>[]>(
@@ -86,8 +87,8 @@ const AssessmentResultPagination: React.FC = () => {
     navigate(`/tests/${assessmentId}/results/${attemptId}`);
   };
 
-  const title = id
-    ? `Test Results of ${results[0]?.attributes.name}`
+  const title = location.state?.name
+    ? `Test Results of ${location.state.name}`
     : "Test Results";
 
   return (

@@ -1,7 +1,7 @@
 services:
-  - type: static-site
-    name: your-site-name
-    env: static
+  - type: web
+    name: owl-test
+    runtime: static
     buildCommand: npm run build
     publishDirectory: dist
     staticPublishPath: /
