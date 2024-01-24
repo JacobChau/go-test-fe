@@ -46,6 +46,7 @@ import PageContainer from "@components/Container/PageContainer.tsx";
 import { OptionDetailPayload, Resource, UserAttributes } from "@/types/apis";
 import { UserRole } from "@/constants/userRole.ts";
 import avatarDefault from "@assets/images/avatar-default.svg";
+import { ResultDisplayMode } from "@/constants/resultDisplayMode.ts";
 
 const AssessmentResultPage: React.FC = () => {
   const theme = useTheme();
@@ -959,69 +960,74 @@ const AssessmentResultPage: React.FC = () => {
             {assessmentResult.questions.map((question, index) =>
               renderQuestionCard(question, index),
             )}
-            {isTeacherAndOwner() && (
-              <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-                {/*Loading overlay*/}
-                {loadingPublish && (
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backgroundColor: "rgba(255, 255, 255, 0.8)",
-                      zIndex: 10,
-                    }}
-                  >
-                    <CircularProgress />
-                  </Box>
-                )}
-                <Button
-                  variant="contained"
-                  color={isPublished ? "success" : "primary"}
-                  onClick={handlePublishResults}
-                  disabled={loadingPublish}
-                >
-                  {isPublished ? (
-                    <Typography
-                      variant="body1"
-                      component="span"
-                      sx={{ display: "flex", alignItems: "center" }}
+            {isTeacherAndOwner() &&
+              Boolean(
+                assessmentResult.resultDisplayMode &&
+                  ResultDisplayMode[assessmentResult.resultDisplayMode] !==
+                    ResultDisplayMode.HideResults,
+              ) && (
+                <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                  {/*Loading overlay*/}
+                  {loadingPublish && (
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: "rgba(255, 255, 255, 0.8)",
+                        zIndex: 10,
+                      }}
                     >
-                      <CheckIcon sx={{ mr: 1 }} />
-                      Publish Again
-                    </Typography>
-                  ) : (
-                    <Typography
-                      variant="body1"
-                      component="span"
-                      sx={{ display: "flex", alignItems: "center" }}
-                    >
-                      <PublishIcon sx={{ mr: 1 }} />
-                      Publish Results
-                    </Typography>
+                      <CircularProgress />
+                    </Box>
                   )}
-                </Button>
-                {message && (
-                  <Alert
-                    severity={isError ? "error" : "success"}
-                    sx={{
-                      position: "absolute",
-                      left: "50%",
-                      bottom: "0",
-                      transform: "translateX(-50%) translateY(-100%)",
-                      maxWidth: "475px",
-                    }}
+                  <Button
+                    variant="contained"
+                    color={isPublished ? "success" : "primary"}
+                    onClick={handlePublishResults}
+                    disabled={loadingPublish}
                   >
-                    {message}
-                  </Alert>
-                )}
-              </Box>
-            )}
+                    {isPublished ? (
+                      <Typography
+                        variant="body1"
+                        component="span"
+                        sx={{ display: "flex", alignItems: "center" }}
+                      >
+                        <CheckIcon sx={{ mr: 1 }} />
+                        Publish Again
+                      </Typography>
+                    ) : (
+                      <Typography
+                        variant="body1"
+                        component="span"
+                        sx={{ display: "flex", alignItems: "center" }}
+                      >
+                        <PublishIcon sx={{ mr: 1 }} />
+                        Publish Results
+                      </Typography>
+                    )}
+                  </Button>
+                  {message && (
+                    <Alert
+                      severity={isError ? "error" : "success"}
+                      sx={{
+                        position: "absolute",
+                        left: "50%",
+                        bottom: "0",
+                        transform: "translateX(-50%) translateY(-100%)",
+                        maxWidth: "475px",
+                      }}
+                    >
+                      {message}
+                    </Alert>
+                  )}
+                </Box>
+              )}
           </Box>
         )}
       </ParentCard>

@@ -102,6 +102,7 @@ export interface AssessmentResultDetailPayload {
   requiredMark: boolean;
   marked: boolean;
   user?: Partial<UserAttributes>;
+  resultDisplayMode: keyof typeof ResultDisplayMode | null;
 }
 
 export interface QuestionResultPayload {

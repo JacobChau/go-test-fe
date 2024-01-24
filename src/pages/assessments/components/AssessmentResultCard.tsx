@@ -37,7 +37,8 @@ const AssessmentResultCard: React.FC<AssessmentCardProps> = ({
   const canShowResult = Boolean(
     assessmentResult.attributes.displayMode &&
       ResultDisplayMode[assessmentResult.attributes.displayMode] !==
-        ResultDisplayMode.HideResults,
+        ResultDisplayMode.HideResults &&
+      assessmentResult.attributes.marked,
   );
 
   const showDetailMode = Boolean(
