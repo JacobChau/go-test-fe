@@ -13,6 +13,7 @@ import {
   TableRow,
   TextField,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 import dayjs from "dayjs";
 import ParentCard from "../Card/ParentCard";
@@ -24,6 +25,7 @@ import SearchComponent, {
   SearchColumn,
   SearchCriteria,
 } from "@components/Search/SearchComponent.tsx";
+import { useTheme } from "@mui/material/styles";
 
 export interface TableColumn {
   label: string;
@@ -82,16 +84,6 @@ interface GenericTableProps {
   onAddNewRecord?: () => void;
 }
 
-const stickyActionStyle = {
-  position: "sticky",
-  right: 0,
-  backgroundColor: "#1abcdc",
-  zIndex: 5,
-  padding: "8px",
-  textAlign: "center",
-  minWidth: "120px",
-};
-
 const GenericTable: React.FC<GenericTableProps> = ({
   title,
   description,
@@ -117,6 +109,22 @@ const GenericTable: React.FC<GenericTableProps> = ({
   renderFilterComponent,
   readonly = false,
 }) => {
+  const theme = useTheme();
+  const isXsDown = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const stickyActionStyle = {
+    position: "sticky",
+    right: 0,
+    backgroundColor: "#1abcdc",
+    zIndex: 5,
+    padding: theme.spacing(1), // Use theme spacing for consistency
+    textAlign: "center",
+    minWidth: isXsDown ? "auto" : "120px",
+    width: isXsDown ? "auto" : "120px",
+    overflow: isXsDown ? "hidden" : "unset",
+    whiteSpace: isXsDown ? "nowrap" : "unset",
+  };
+
   const [editingRow, setEditingRow] = useState<number | null>(null);
   const [editedData, setEditedData] = useState<Record<string, any>>({});
   const [showForm, setShowForm] = useState(false);
@@ -152,24 +160,22 @@ const GenericTable: React.FC<GenericTableProps> = ({
       <ParentCard title={title}>
         <BlankCard>
           {renderFilterComponent && (
-            <Grid container sx={{ marginBottom: 3 }}>
-              <Grid item xs={12}>
+            <Grid container spacing={2} sx={{ marginBottom: 3 }}>
+              <Grid item xs={12} sm={6} md={4} lg={3}>
                 <Typography variant="subtitle1" sx={{ marginBottom: 1 }}>
                   Filter
                 </Typography>
-              </Grid>
-              <Grid item xs={12}>
                 {renderFilterComponent(onSearch)}
               </Grid>
             </Grid>
           )}
-          <Grid container>
-            <Grid item xs={12}>
+          <Grid container spacing={2} alignItems="flex-end">
+            <Grid item xs={12} sm={6} md={4} lg={3}>
               <Typography variant="subtitle1" sx={{ marginBottom: 1 }}>
                 Search
               </Typography>
             </Grid>
-            <Grid item xs={12} sx={{ marginBottom: 2 }}>
+            <Grid item xs={12} sm={6} md={4} lg={3}>
               <SearchComponent
                 searchTerm={searchTerm}
                 onSearchChange={onSearch}
@@ -179,9 +185,9 @@ const GenericTable: React.FC<GenericTableProps> = ({
               />
             </Grid>
             {!readonly && (
-              <Grid item xs={12}>
+              <Grid item>
                 <Button
-                  sx={{ marginBottom: 2, float: "right" }}
+                  sx={{ marginBottom: 2 }}
                   variant="contained"
                   onClick={handleAddClick}
                 >
@@ -199,7 +205,22 @@ const GenericTable: React.FC<GenericTableProps> = ({
           )}
           <TableContainer
             component={Box}
-            sx={{ maxWidth: "100%", overflowX: "auto" }}
+            sx={{
+              maxWidth: "100%",
+              overflowX: "auto",
+              "& .MuiTableCell-root": {
+                padding: isXsDown ? "6px 16px" : "16px 24px",
+              },
+              [theme.breakpoints.down("md")]: {
+                maxWidth: "100vw",
+                overflowX: "scroll",
+              },
+
+              [theme.breakpoints.down("md")]: {
+                maxWidth: "100vw",
+                overflowX: "scroll",
+              },
+            }}
           >
             {loading && (
               <Box
@@ -223,7 +244,6 @@ const GenericTable: React.FC<GenericTableProps> = ({
               <TableHead>
                 <TableRow>
                   {columns.map((column, index) => (
-                    // not sx the padding
                     <TableCell
                       key={index}
                       sx={{
@@ -355,7 +375,20 @@ const GenericTable: React.FC<GenericTableProps> = ({
           </TableContainer>
           <TablePagination
             component={Box}
-            sx={{ float: "right" }}
+            sx={{
+              float: "right",
+              [theme.breakpoints.down("md")]: {
+                float: "none",
+                width: "100%",
+                ".MuiTablePagination-toolbar": {
+                  flexWrap: "wrap", // wrap toolbar contents
+                },
+                ".MuiTablePagination-selectLabel, .MuiTablePagination-select, .MuiTablePagination-selectIcon":
+                  {
+                    display: "none", // optionally hide label and select icon on small screens
+                  },
+              },
+            }}
             rowsPerPageOptions={[5, 10, 25, { label: "All", value: 999999 }]}
             colSpan={columns.length + (actions ? 1 : 0)}
             count={totalRows}

@@ -9,6 +9,8 @@ import {
   Skeleton,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { useFetchData } from "@/hooks";
 import AssessmentService from "@/api/services/assessmentService.ts";
@@ -30,6 +32,13 @@ const initialPagination = {
 
 const AssessmentPagination = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const gridItemSize = isMobile ? 12 : 3;
+
+  const paginationSize = isMobile ? "small" : "medium";
+
   const {
     items: assessments,
     loading,
@@ -85,14 +94,24 @@ const AssessmentPagination = () => {
             mb: 2,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              alignItems: "center",
+              mb: 2,
+            }}
+          >
             <TextField
               fullWidth
               label="Search Assessments"
               variant="outlined"
               value={searchTerm}
               onChange={(e) => handleSearchTermChange(e.target.value)}
-              sx={{ mr: 4 }}
+              sx={{
+                mr: isMobile ? 0 : 4,
+                mb: isMobile ? 2 : 0, // add margin-bottom on mobile
+              }}
               InputLabelProps={{
                 sx: !searchTerm
                   ? { color: "#BDBDBD", transition: "0.3s", opacity: 0.7 }
@@ -108,7 +127,7 @@ const AssessmentPagination = () => {
             <Grid container spacing={1}>
               {Array.from(new Array(initialPagination.perPage)).map(
                 (_, index) => (
-                  <Grid item key={index} xs={6} sm={4} md={3}>
+                  <Grid item key={index} xs={12} sm={6} md={gridItemSize}>
                     <Skeleton variant="rectangular" height={118} />
                     <Skeleton variant="text" />
                     <Skeleton variant="text" />
@@ -123,7 +142,7 @@ const AssessmentPagination = () => {
           ) : assessments.length > 0 ? (
             <Grid container spacing={1}>
               {assessments.map((assessment) => (
-                <Grid item key={assessment.id} xs={6} sm={4} md={3}>
+                <Grid item key={assessment.id} xs={12} sm={6} md={gridItemSize}>
                   <AssessmentCard
                     assessment={assessment}
                     onSelect={handleSelectAssessment}
@@ -140,6 +159,7 @@ const AssessmentPagination = () => {
           {!loading && !error && (
             <Box mt={4} display="flex" justifyContent="center">
               <Pagination
+                size={paginationSize}
                 count={Math.ceil(pagination.total / pagination.perPage)}
                 page={pagination.page + 1}
                 onChange={handleMaterialUIPageChange}

@@ -8,6 +8,7 @@ import {
   PaginationItem,
   Skeleton,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 import { AssessmentResultPayload } from "@/types/apis/assessmentTypes.ts";
 import { useDispatch, useSelector } from "react-redux";
@@ -18,6 +19,7 @@ import { Resource } from "@/types/apis";
 import PageContainer from "@components/Container/PageContainer.tsx";
 import { ParentCard } from "@components/Card";
 import AssessmentService from "@/api/services/assessmentService.ts";
+import { useTheme } from "@mui/material/styles";
 
 const AssessmentResultPagination: React.FC = () => {
   const { id } = useParams();
@@ -27,6 +29,11 @@ const AssessmentResultPagination: React.FC = () => {
   const [results, setResults] = useState<Resource<AssessmentResultPayload>[]>(
     [],
   );
+
+  const theme = useTheme();
+  const isXsDown = useMediaQuery(theme.breakpoints.down("sm"));
+  const isSmDown = useMediaQuery(theme.breakpoints.down("md"));
+
   const resultsPerPage = 12;
 
   const [loading, setLoading] = useState<boolean>(true);
@@ -130,7 +137,7 @@ const AssessmentResultPagination: React.FC = () => {
             {loading ? (
               <Grid container spacing={1}>
                 {Array.from(new Array(resultsPerPage)).map((_, index) => (
-                  <Grid item key={index} xs={6} sm={4} md={3}>
+                  <Grid item key={index} xs={12} sm={6} md={4}>
                     <Skeleton variant="rectangular" height={118} />
                     <Skeleton variant="text" />
                     <Skeleton variant="text" />
@@ -139,20 +146,33 @@ const AssessmentResultPagination: React.FC = () => {
               </Grid>
             ) : results.length > 0 ? (
               <Grid container spacing={1}>
-                {results.map((assessment) => (
-                  <Grid item key={assessment.id} xs={6} sm={4} md={3}>
-                    <AssessmentResultCard
-                      assessmentResult={assessment}
-                      onSelect={handleSelectAssessment}
-                      user={assessment.attributes.user?.attributes}
-                    />
-                  </Grid>
-                ))}
+                <Grid container item xs={12} spacing={1}>
+                  {results.map((assessment) => (
+                    <Grid item key={assessment.id} xs={12} sm={6} md={4} lg={3}>
+                      <AssessmentResultCard
+                        assessmentResult={assessment}
+                        onSelect={handleSelectAssessment}
+                        user={assessment.attributes.user?.attributes}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
               </Grid>
             ) : (
-              <Typography variant="h6" textAlign="center">
-                No assessments available.
-              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: isXsDown
+                    ? "calc(100vh - 200px)"
+                    : "calc(100vh - 300px)",
+                }}
+              >
+                <Typography variant={isSmDown ? "h6" : "h4"}>
+                  No results found
+                </Typography>
+              </Box>
             )}
 
             {!loading && (
