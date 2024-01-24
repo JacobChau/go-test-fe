@@ -170,22 +170,31 @@ const GenericTable: React.FC<GenericTableProps> = ({
             </Grid>
           )}
           <Grid container spacing={2} alignItems="flex-end">
-            <Grid item xs={12} sm={6} md={4} lg={3}>
+            <Grid item xs={12} sm={12} md={6} lg={6}>
               <Typography variant="subtitle1" sx={{ marginBottom: 1 }}>
                 Search
               </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4} lg={3}>
               <SearchComponent
                 searchTerm={searchTerm}
                 onSearchChange={onSearch}
                 searchColumn={searchColumn}
                 searchCriteria={searchCriteria}
                 onSearchTermChange={onSearchTermChange}
+                sx={{
+                  width: isXsDown ? "100%" : "auto", // Adjust width based on screen size
+                  marginBottom: 2,
+                }}
               />
             </Grid>
             {!readonly && (
-              <Grid item>
+              <Grid
+                item
+                xs={12}
+                sm={12}
+                md={6}
+                lg={6}
+                sx={{ textAlign: isXsDown ? "center" : "right" }}
+              >
                 <Button
                   sx={{ marginBottom: 2 }}
                   variant="contained"

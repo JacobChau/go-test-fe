@@ -18,7 +18,7 @@ export const GroupColumns: TableColumn[] = [
     type: "text",
     canEdit: true,
     canSearch: true,
-    sx: { width: "15%", minWidth: 180 },
+    sx: { width: "20%", minWidth: 100 },
   },
   {
     label: "Description",
@@ -26,7 +26,7 @@ export const GroupColumns: TableColumn[] = [
     type: "text",
     canEdit: true,
     canSearch: true,
-    sx: { width: "45%" },
+    sx: { width: "30%" },
     render: (row) => (
       <Typography
         variant="body2"
@@ -49,7 +49,7 @@ export const GroupColumns: TableColumn[] = [
     type: "user",
     canEdit: true,
     canSearch: false,
-    sx: { width: "15%", minWidth: 150 },
+    sx: { width: "20%", minWidth: 180 },
     render: (row: GroupAttributes) => {
       if (row.createdBy) {
         return (
@@ -83,7 +83,7 @@ export const GroupColumns: TableColumn[] = [
     type: "date",
     canSearch: false,
     canEdit: false,
-    sx: { width: "10%", minWidth: 120 },
+    sx: { width: "10%", minWidth: 150 },
     render: (row: GroupAttributes) => dayjs(row.createdAt).format("DD-MM-YYYY"),
   },
 ];

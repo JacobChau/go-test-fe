@@ -8,6 +8,7 @@ import {
   Button,
   useMediaQuery,
   Alert,
+  Grid,
 } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import { AssessmentDetailPayload } from "@/types/apis/assessmentTypes.ts";
@@ -98,10 +99,10 @@ const AssessmentDetailModal: React.FC<AssessmentDetailModalProps> = ({
           sx={{
             ...style,
             ...(fullScreen && {
-              width: "auto",
-              maxWidth: "90%",
-              height: "auto",
-              maxHeight: "90%",
+              width: fullScreen ? "90%" : "auto", // Adjust width based on screen size
+              maxWidth: fullScreen ? "90%" : "60%", // Adjust maxWidth based on screen size
+              height: fullScreen ? "auto" : "90vh", // Adjust height based on screen size
+              overflowY: fullScreen ? "scroll" : "auto", // Adjust overflowY based on screen size
             }),
             animation: loading ? "none" : "grow 1s infinite",
           }}
@@ -163,6 +164,7 @@ const AssessmentDetailModal: React.FC<AssessmentDetailModalProps> = ({
                   sx={{
                     fontStyle: "italic",
                     mt: 2,
+                    mb: 2,
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     display: "-webkit-box",
@@ -176,8 +178,8 @@ const AssessmentDetailModal: React.FC<AssessmentDetailModalProps> = ({
                   )}
                 </Typography>
 
-                <Box display="flex" mt={3}>
-                  <Box flex={1} overflow="auto" pr={1}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
                     <Typography variant="body1" sx={{ mb: 1.5 }}>
                       <SubjectIcon
                         color="primary"
@@ -220,7 +222,7 @@ const AssessmentDetailModal: React.FC<AssessmentDetailModalProps> = ({
                         "DD/MM/YYYY",
                       )}
                     </Typography>
-                    <Typography variant="body1" sx={{ mb: 2 }}>
+                    <Typography variant="body1">
                       <PublicIcon
                         color="primary"
                         sx={{ verticalAlign: "middle", mr: 1 }}
@@ -230,8 +232,8 @@ const AssessmentDetailModal: React.FC<AssessmentDetailModalProps> = ({
                         "DD/MM/YYYY",
                       )}
                     </Typography>
-                  </Box>
-                  <Box width="auto" overflow="auto" sx={{ pl: 1 }}>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
                     <Typography variant="body1" sx={{ mb: 1.5 }}>
                       <TimerIcon
                         color="primary"
@@ -279,8 +281,8 @@ const AssessmentDetailModal: React.FC<AssessmentDetailModalProps> = ({
                         "Not specified",
                       )}
                     </Typography>
-                  </Box>
-                </Box>
+                  </Grid>
+                </Grid>
                 <Button
                   sx={{ mt: 3, width: "100%" }}
                   variant="contained"

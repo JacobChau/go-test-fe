@@ -210,6 +210,18 @@ const TakeAssessment: React.FC = () => {
             };
           });
 
+          // if questions.length === 0, then the assessment is not published
+          if (questionsData.length === 0) {
+            dispatch(
+              setMessageWithTimeout({
+                message: "Assessment has no questions",
+                isError: true,
+              }),
+            );
+            navigate("/dashboard");
+            return;
+          }
+
           setAssessment({
             id: assessmentData.id,
             name: assessmentData.attributes.name,
@@ -497,7 +509,7 @@ const TakeAssessment: React.FC = () => {
               <Grid
                 container
                 key={currentQuestionIndex}
-                sx={{ mt: 2 }}
+                sx={{ my: 2 }}
                 spacing={1}
                 columns={10}
               >

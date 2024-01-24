@@ -24,6 +24,7 @@ export interface SearchProps {
   searchCriteria: SearchCriteria;
   searchTerm?: string;
   onSearchTermChange: (searchTerm: string) => void;
+  sx?: any;
 }
 
 const SearchComponent: React.FC<SearchProps> = ({
@@ -32,9 +33,10 @@ const SearchComponent: React.FC<SearchProps> = ({
   searchCriteria,
   searchTerm,
   onSearchTermChange,
+  sx,
 }) => {
   return (
-    <Grid container spacing={2}>
+    <Grid container spacing={2} sx={sx}>
       <Grid item xs={12} sm={4}>
         <FormControl variant="outlined" fullWidth>
           <InputLabel id="search-column-label">Column</InputLabel>

@@ -1,20 +1,26 @@
+import React, { useState } from "react";
 import {
   IconButton,
   Menu,
   MenuItem,
-  ListItemIcon,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions,
   Button,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import { IconDotsVertical, IconEdit, IconTrash } from "@tabler/icons-react";
-import React, { useState } from "react";
 import { ActionTableProps } from "@components/PaginationTable/GenericTable.tsx";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 const UserActions: React.FC<ActionTableProps> = (props: ActionTableProps) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const open = Boolean(anchorEl);
@@ -53,37 +59,32 @@ const UserActions: React.FC<ActionTableProps> = (props: ActionTableProps) => {
 
   return (
     <>
-      <IconButton
-        id="user-actions-button"
-        aria-controls={open ? "user-actions-menu" : undefined}
-        aria-haspopup="true"
-        aria-expanded={open ? "true" : undefined}
-        onClick={handleClick}
-      >
-        <IconDotsVertical width={18} />
-      </IconButton>
-      <Menu
-        id="user-actions-menu"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        MenuListProps={{
-          "aria-labelledby": "user-actions-button",
-        }}
-      >
-        <MenuItem onClick={handleEditClick}>
-          <ListItemIcon>
-            <IconEdit width={18} />
-          </ListItemIcon>
-          Edit
-        </MenuItem>
-        <MenuItem onClick={handleDeleteClick}>
-          <ListItemIcon>
-            <IconTrash width={18} />
-          </ListItemIcon>
-          Delete
-        </MenuItem>
-      </Menu>
+      {isMobile ? (
+        // Mobile version: Show three-dot icon and Menu
+        <>
+          <IconButton onClick={handleClick}>
+            <MoreVertIcon />
+          </IconButton>
+          <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+            <MenuItem onClick={handleEditClick}>
+              <EditIcon /> Edit
+            </MenuItem>
+            <MenuItem onClick={handleDeleteClick}>
+              <DeleteIcon /> Delete
+            </MenuItem>
+          </Menu>
+        </>
+      ) : (
+        // Non-mobile version: Show action icons directly
+        <>
+          <IconButton onClick={handleEditClick}>
+            <EditIcon />
+          </IconButton>
+          <IconButton onClick={handleDeleteClick}>
+            <DeleteIcon />
+          </IconButton>
+        </>
+      )}
       <Dialog
         open={confirmOpen}
         onClose={handleCancelDelete}

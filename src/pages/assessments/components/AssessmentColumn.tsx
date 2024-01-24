@@ -18,7 +18,7 @@ const AssessmentColumn: TableColumn[] = [
     type: "text",
     canEdit: false,
     canSearch: true,
-    sx: { width: "20%", minWidth: 150 },
+    sx: { width: "35%", minWidth: 200 },
   },
   {
     label: "Description",
@@ -26,7 +26,7 @@ const AssessmentColumn: TableColumn[] = [
     type: "text",
     canEdit: false,
     canSearch: true,
-    sx: { width: "50%", minWidth: 250 },
+    sx: { width: "35%", minWidth: 150 },
     render: (row) => (
       <Typography
         variant="body2"
