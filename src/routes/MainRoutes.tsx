@@ -41,12 +41,16 @@ const GroupMemberList = Loadable(
   lazy(() => import("@/pages/groups/GroupMemberList.tsx")),
 );
 
+const VideoTest = Loadable(
+  lazy(() => import("@/pages/video/VideoComponent.tsx")),
+);
+
 const MainRoutes = {
   path: "/",
   element: (
-    <Protected>
-      <MainLayout />
-    </Protected>
+    // <Protected>
+    <MainLayout />
+    // </Protected>
   ),
   children: [
     {
@@ -113,6 +117,11 @@ const MainRoutes = {
       path: "/tests/:id/results",
       element: <AssessmentResultListPage />,
     },
+    {
+      path: "/video",
+      element: <VideoTest />,
+    },
+
     {
       path: "*",
       element: <ErrorNotFound />,
